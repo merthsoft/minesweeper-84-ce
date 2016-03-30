@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{09ABC1B2-E8E1-40E3-B4FC-2A815B86A2C2}</ProjectGuid>
+    <ProjectGuid>{BC5CCB23-361C-4298-9A7B-04CFAE48FCC0}</ProjectGuid>
     <Keyword>MakeFileProj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -63,6 +63,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <IncludePath>C:\dev\include\std;C:\dev\include;C:\dev;C:\dev\include\ce\c</IncludePath>
+    <ReferencePath>C:\dev\include\std;C:\dev\include;C:\dev;C:\dev\include\ce\c</ReferencePath>
+    <LibraryPath>C:\dev\include\std;C:\dev\include;C:\dev;C:\dev\include\ce\c</LibraryPath>
+    <LibraryWPath />
+    <NMakeBuildCommandLine>makece shell=cmd.exe</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>makece shell=cmd.exe clean
+makece shell=cmd.exe</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>makece shell=cmd.exe clean</NMakeCleanCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
@@ -71,6 +79,59 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="cursor.c" />
+    <ClCompile Include="eight.c" />
+    <ClCompile Include="explode.c" />
+    <ClCompile Include="filled.c" />
+    <ClCompile Include="five.c" />
+    <ClCompile Include="flagged.c" />
+    <ClCompile Include="four.c" />
+    <ClCompile Include="key_helper.c" />
+    <ClCompile Include="main.c" />
+    <ClCompile Include="menu.c" />
+    <ClCompile Include="mine.c" />
+    <ClCompile Include="misflagged.c" />
+    <ClCompile Include="one.c" />
+    <ClCompile Include="question.c" />
+    <ClCompile Include="seven.c" />
+    <ClCompile Include="six.c" />
+    <ClCompile Include="sprites.c" />
+    <ClCompile Include="three.c" />
+    <ClCompile Include="two.c" />
+    <ClCompile Include="win.c" />
+    <ClCompile Include="zero.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="cursor.png" />
+    <Image Include="eight.png" />
+    <Image Include="explode.png" />
+    <Image Include="filled.png" />
+    <Image Include="five.png" />
+    <Image Include="flagged.png" />
+    <Image Include="four.png" />
+    <Image Include="mine.png" />
+    <Image Include="misflagged.png" />
+    <Image Include="one.png" />
+    <Image Include="question.png" />
+    <Image Include="seven.png" />
+    <Image Include="six.png" />
+    <Image Include="three.png" />
+    <Image Include="two.png" />
+    <Image Include="win.png" />
+    <Image Include="zero.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="key_helper.h" />
+    <ClInclude Include="main.h" />
+    <ClInclude Include="menu.h" />
+    <ClInclude Include="menu_sprites.h" />
+    <ClInclude Include="sprites.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="convpng.ini" />
+    <None Include="Makefile" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

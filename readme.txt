@@ -1,3 +1,6 @@
+Minesweeper 84+CE
+2016 Merthsoft Creations
+shaun@shaunmcfall.com
 ========================================================================
     MAKEFILE PROJECT : Minesweeper Project Overview
 ========================================================================
