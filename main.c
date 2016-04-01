@@ -45,6 +45,9 @@ void main(void) {
         }
     }
 
+    gc_SetTextColor(7);
+    gc_PrintStringXY("Merthsoft  '16", 222, 230);
+
     mainMenu = Menu_create(4, NULL);
     mainMenu->XLocation = 130;
     mainMenu->YLocation = 188;
