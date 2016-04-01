@@ -52,16 +52,18 @@ int8_t numFlags = 0;
 int8_t visibleField[MAX_WIDTH][MAX_HEIGHT];
 int8_t mineField[MAX_WIDTH][MAX_HEIGHT];
 
-#define DrawRectFill(x, y, w, h, color_index) gc_SetColorIndex(color_index); gc_NoClipRectangle(x, y, w, h);
-#define DrawRect(x, y, w, h, color_index) gc_SetColorIndex(color_index); gc_NoClipRectangleOutline(x, y, w, h);
+#define DrawRectFill(x, y, w, h, color_index)     gc_SetColorIndex(color_index); gc_NoClipRectangle(x, y, w, h);
+#define DrawRect(x, y, w, h, color_index)         gc_SetColorIndex(color_index); gc_NoClipRectangleOutline(x, y, w, h);
+#define getVisibleType(i, j)                      getTile(visibleField[i][j])
 
+void GameLoop();
 void DrawField();
 void CreateFields(int8_t x, int8_t y);
 int8_t Cascade(int8_t x, int8_t y, int8_t total, bool initialClick);
 int8_t CountFlags(int8_t x, int8_t y);
 int8_t CountNeighbors(int8_t x, int8_t y);
 void DrawTile(uint8_t* tile, int8_t i, int8_t j);
-uint8_t* getVisibleType(int8_t i, int8_t j);
+uint8_t* getTile(int8_t tileNum);
 void DrawVisibleTile(int8_t i, int8_t j);
 void Die(int8_t cursorX, int8_t cursorY);
 void Win();

@@ -20,13 +20,8 @@
 #include "menu.h"
 
 void main(void) {	
-    bool firstRun = 1;
-    int8_t x;
-    int8_t y;
-    int8_t old_x;
-    int8_t old_y;
-    bool redraw;
-    bool flag;
+    Menu* mainMenu;
+    int8_t i, j;
 
     Key_init();
     gc_InitGraph();
@@ -35,16 +30,56 @@ void main(void) {
     gc_SetTransparentColor(sprites_transpcolor_index);
     gc_FillScrn(0);
 
-start:
+    gc_ClipDrawTransparentSprite(logo1, 3, 9, logo1_width, logo1_height);
+    gc_ClipDrawTransparentSprite(logo2, 221, 9, logo2_width, logo2_height);
+    CreateFields(0, 0);
+    
+    DrawField();
+    for (i = 0; i < fieldWidth; i++) {
+        for (j = 0; j < fieldHeight; j++) {
+            int8_t tile = CountNeighbors(i, j);
+            DrawTile(getTile(tile), i, j);
+            if (mineField[i][j]) {
+                DrawTile(mine, i, j);
+            }
+        }
+    }
+
+    mainMenu = Menu_create(4, NULL);
+    mainMenu->XLocation = 130;
+    mainMenu->YLocation = 188;
+    
+    mainMenu->TextBackgroundColor = 0;
+    mainMenu->TextForegroundColor = 7;
+    mainMenu->ClearColor = 0;
+    
+    mainMenu->Items[0].Name = "Play";
+    mainMenu->Items[1].Name = "Settings";
+    mainMenu->Items[2].Name = "Help";
+    mainMenu->Items[3].Name = "Quit";
+    
+    mainMenu->BackKey = Key_Del;
+    mainMenu->ClearScreen = 0;
+
+
+    Menu_display(mainMenu);
+
+    Key_reset();
+    gc_CloseGraph();
+    pgrm_CleanUp();
+}
+
+void GameLoop() {
+    int8_t x = 0;
+    int8_t y = 0;
+    int8_t old_x = 0;
+    int8_t old_y = 0;
+    bool redraw = true;
+    bool flag = false;
+
     total = 0;
-    x = 0;
-    y = 0;
-    old_x = x;
-    old_y = y;
     numFlags = 0;
     CreateFields(0, 0);
-    redraw = true;
-    flag = false;
 
     while (!Key_isDown(Key_Del)) {
         if (redraw) {
@@ -58,22 +93,18 @@ start:
         old_x = x;
         old_y = y;
 
-        if (Key_isDown(Key_Up)) { y = y == 0 ? fieldHeight - 1 : y - 1; }
-        else if (Key_isDown(Key_Down)) { y = y == fieldHeight - 1 ? 0 : y + 1; }
-        else if (Key_isDown(Key_Left)) { x = x == 0 ? fieldWidth - 1 : x - 1; }
-        else if (Key_isDown(Key_Right)) { x = x == fieldWidth - 1 ? 0 : x + 1; }
-        else if (Key_justPressed(Key_2nd)) {
+        if (Key_isDown(Key_Up)) { y = y == 0 ? fieldHeight - 1 : y - 1; } else if (Key_isDown(Key_Down)) { y = y == fieldHeight - 1 ? 0 : y + 1; } else if (Key_isDown(Key_Left)) { x = x == 0 ? fieldWidth - 1 : x - 1; } else if (Key_isDown(Key_Right)) { x = x == fieldWidth - 1 ? 0 : x + 1; } else if (Key_justPressed(Key_2nd)) {
             if (visibleField[x][y] != FLAGGED && visibleField[x][y] != 0) {
                 int8_t num;
                 num = Cascade(x, y, total, 1);
                 if (num == -1) {
                     Die(x, y);
-                    goto start;
+                    return;
                 }
                 total += num;
                 if (total == fieldHeight*fieldWidth - numMines) {
                     Win();
-                    goto start;
+                    return;
                 }
                 redraw = true;
             }
@@ -95,10 +126,6 @@ start:
             flag = false;
         }
     }
-        
-    Key_reset();
-    gc_CloseGraph();
-    pgrm_CleanUp();
 }
 
 void DrawTile(uint8_t* tile, int8_t i, int8_t j) {
@@ -121,7 +148,7 @@ void Win() {
 
     do {
         Key_scanKeys(0);
-    } while (!(Key_isDown(Key_Del) || Key_isDown(Key_Enter) || Key_isDown(Key_Clear)));
+    } while (!(Key_justPressed(Key_Del) || Key_justPressed(Key_Enter) || Key_justPressed(Key_Clear) || Key_justPressed(Key_2nd)));
 }
 
 void Die(int8_t cursorX, int8_t cursorY) {
@@ -146,7 +173,7 @@ void Die(int8_t cursorX, int8_t cursorY) {
 
     do {
         Key_scanKeys(0);
-    } while (!(Key_isDown(Key_Del) || Key_isDown(Key_Enter) || Key_isDown(Key_Clear)));
+    } while (!(Key_justPressed(Key_Del) || Key_justPressed(Key_Enter) || Key_justPressed(Key_Clear) || Key_justPressed(Key_2nd)));
 }
 
 int8_t Cascade(int8_t x, int8_t y, int8_t total, bool initialClick) {
@@ -258,8 +285,8 @@ void DrawVisibleTile(int8_t i, int8_t j) {
     DrawTile(getVisibleType(i, j), i, j);
 }
 
-uint8_t* getVisibleType(int8_t i, int8_t j) {
-    switch (visibleField[i][j]) {
+uint8_t* getTile(int8_t tileNum) {
+    switch (tileNum) {
         case FILLED:
             return filled;
         case FLAGGED:
@@ -287,6 +314,6 @@ uint8_t* getVisibleType(int8_t i, int8_t j) {
         case 8:
             return eight;
         default:
-            return explode;
+            return NULL;
     }
 }

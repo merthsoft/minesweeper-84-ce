@@ -56,6 +56,12 @@ extern uint8_t win[400];
 extern uint8_t cursor[400];
 #define cursor_width 20
 #define cursor_height 20
+extern uint8_t logo1[5250];
+#define logo1_width 210
+#define logo1_height 25
+extern uint8_t logo2[1880];
+#define logo2_width 94
+#define logo2_height 20
 extern uint16_t sprites_pal[58];
 
 #endif

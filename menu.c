@@ -30,6 +30,13 @@ Menu* Menu_create(uint8_t numItems, const char* title) {
     menu->CursorChar = 0x10;
     menu->Tag = NULL;
 
+    menu->XLocation = 0;
+    menu->YLocation = 0;
+    menu->ClearScreen = true;
+    menu->ClearColor = 255;
+    menu->TextBackgroundColor = 255;
+    menu->TextForegroundColor = 0;
+
     return menu;
 }
 
@@ -57,14 +64,21 @@ int Menu_display(Menu* menu) {
 
     eventArgs = malloc(sizeof(MenuEventArgs));
 
-    gc_FillScrn(255);
+    if (menu->ClearScreen) {
+        gc_FillScrn(menu->ClearColor);
+    }
+
     while (!back) {
-        gc_PrintStringXY(menu->Title, 2, 1);
-        gc_SetColorIndex(0);
-        gc_NoClipHorizLine(1, 10, gc_StringWidth(menu->Title) + 5);
+        gc_SetTextColor(menu->TextForegroundColor | menu->TextBackgroundColor << 8);
+
+        if (menu->Title != NULL) {
+            gc_PrintStringXY(menu->Title, menu->XLocation + 2, menu->YLocation + 1);
+            gc_SetColorIndex(menu->TextForegroundColor);
+            gc_NoClipHorizLine(menu->XLocation + 1, menu->YLocation + 10, gc_StringWidth(menu->Title) + 5);
+        }
 
         for (i = 0; i < menu->NumItems; i++) {
-            gc_PrintStringXY(menu->Items[i].Name, textPadding + extraTextPadding, 3 + linePadding + linePadding * i);
+            gc_PrintStringXY(menu->Items[i].Name, menu->XLocation + textPadding + extraTextPadding, menu->YLocation + 3 + linePadding + linePadding * i);
 
             if (menu->SelectionType != MenuSelectionType_None && menu->Items[i].Function != FUNCTION_BACK) {
                 if (menu->Items[i].Selected) {
@@ -76,20 +90,20 @@ int Menu_display(Menu* menu) {
 
                 switch (menu->SelectionType) {
                     case MenuSelectionType_Single:
-                        gc_NoClipDrawSprite(selected ? radiobutton_filled : radiobutton_empty, textPadding, 3 + linePadding + linePadding * i - 1, 9, 9);
+                        gc_NoClipDrawSprite(selected ? radiobutton_filled : radiobutton_empty, menu->XLocation + textPadding, menu->YLocation + 3 + linePadding + linePadding * i - 1, 9, 9);
                         break;
                     case MenuSelectionType_Multiple:
-                        gc_NoClipDrawSprite(selected ? checkbox_checked : checkbox_empty, textPadding, 3 + linePadding + linePadding * i - 1, 9, 9);
+                        gc_NoClipDrawSprite(selected ? checkbox_checked : checkbox_empty, menu->XLocation + textPadding, menu->YLocation + 3 + linePadding + linePadding * i - 1, 9, 9);
                         break;
                 }
             }
         }
 
-        gc_SetTextXY(2, 3 + linePadding * y);
+        gc_SetTextXY(menu->XLocation + 2, menu->YLocation + 3 + linePadding * y);
         gc_PrintChar(menu->CursorChar);
         Key_scanKeys(0);
         old_y = y;
-
+        
         if (menu->ExtraFunction != FUNCTION_NONE) {
             void(*func)(MenuEventArgs*) = menu->ExtraFunction;
             eventArgs->FrameNumber = frameNumber;
@@ -138,15 +152,15 @@ int Menu_display(Menu* menu) {
                 menu = eventArgs->Menu;
                 back = eventArgs->Back;
             }
-            gc_FillScrn(255);
+            gc_FillScrn(menu->ClearColor);
         } else if (Key_justPressed(menu->BackKey)) {
             y = 0;
             back = true;
         }
 
         if (old_y != y) {
-            gc_SetColorIndex(255);
-            gc_NoClipRectangle(0, 3 + linePadding * old_y, 10, 8);
+            gc_SetColorIndex(menu->ClearColor);
+            gc_NoClipRectangle(menu->XLocation + 0, menu->YLocation + 3 + linePadding * old_y, 10, 8);
         }
 
         frameNumber++;

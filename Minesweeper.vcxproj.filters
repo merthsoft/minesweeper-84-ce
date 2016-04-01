@@ -87,6 +87,12 @@
     <ClCompile Include="cursor.c">
       <Filter>Source Files\sprites</Filter>
     </ClCompile>
+    <ClCompile Include="logo1.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="logo2.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="eight.png">
@@ -138,6 +144,12 @@
       <Filter>Resource Files\sprites</Filter>
     </Image>
     <Image Include="cursor.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="logo1.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="logo2.png">
       <Filter>Resource Files\sprites</Filter>
     </Image>
   </ItemGroup>

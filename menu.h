@@ -11,7 +11,7 @@
 
 typedef struct MenuItem {
     char* Name;
-    void* Function;
+    void *Function;
     bool Selected;
     void* Tag;
 } MenuItem;
@@ -23,13 +23,26 @@ typedef enum MenuSelectionType {
 } MenuSelectionType;
 
 typedef struct Menu {
+    uint16_t XLocation;
+    uint8_t YLocation;
+        
+    uint8_t ClearColor;
+    bool ClearScreen;
+
+    uint8_t TextForegroundColor;
+    uint8_t TextBackgroundColor;
     char* Title;
-    MenuItem* Items;
+
     uint8_t NumItems;
+    MenuItem* Items;
+    
     void* ExtraFunction;
+    
     MenuSelectionType SelectionType;
+    
     key_t BackKey;
     char CursorChar;
+    
     void* Tag;
 } Menu;
 
