@@ -1,5 +1,21 @@
-Minesweeper 84+CE
+Minesweeper 84+CE v0.9
 2016 Merthsoft Creations
 shaun@shaunmcfall.com
 
-Minesweeper for the TI-84+CE.
+Minesweeper for the TI-84+CE. See the in-game help for details.
+
+Requires the CE libraries made by MateoConLechuga:
+https://github.com/CE-Programming/libraries/releases/
+
+Source code:
+The source is maintained in a git repository available here: https://bitbucket.org/merthsoft/minesweeper-84-ce
+
+Credits:
+Many thanks to Mateo for the CE toolchain, libraries, and CEmu, all of which made this possible. He also fixed
+many bugs for me I found along the way.
+
+Thanks to Tari for all his programming help. I'm bad at C, and he is significantly better :)
+
+Revision History:
+
+v0.9 2016.04.02 - Beta Release

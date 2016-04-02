@@ -55,6 +55,7 @@ void main(void) {
     main_menu->Items[1].Name = "Difficulty";
     main_menu->Items[1].Function = settings_setup;
     main_menu->Items[2].Name = "Help";
+    main_menu->Items[2].Function = print_help_text;
     main_menu->Items[3].Name = "Quit";
     main_menu->Items[3].Function = MENU_FUNCTION_BACK;
 
@@ -79,6 +80,7 @@ void draw_demo_board(MenuEventArgs* menuEventArgs) {
 
     gc_SetTextColor(7);
     gc_PrintStringXY("Merthsoft  '16", 222, 230);
+    gc_PrintStringXY("v0.9", 290, 32);
 }
 
 void main_game_loop(MenuEventArgs* menuEventArgs) {
@@ -93,7 +95,6 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
     
     settings = (Settings*)menuEventArgs->Menu->Tag;
     minefield = minefield_create(settings->width, settings->height, settings->num_mines);
-    sprintf(dbgout, "%p\n", minefield);
     gc_FillScrn(0);
 
     while (!Key_isDown(Key_Del)) {
@@ -153,6 +154,59 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
     }
 
     minefield_delete(minefield);
+}
+
+void print_string(const char* string, uint16_t x, uint8_t* y, uint16_t indent) {
+    char* sub_string;
+    uint16_t drawX = x;
+    uint16_t space_width;
+    space_width = 8;//gc_StringWidth(" ");
+
+    sub_string = strtok(string, " ");
+    while (sub_string != NULL) {
+        unsigned int width;
+        width = gc_StringWidth(sub_string);
+        if (drawX + width > LCD_WIDTH_PX - 5) {
+            *y += 10;
+            drawX = x + indent;
+        }
+        gc_PrintStringXY(sub_string, drawX, *y);
+        drawX += width + space_width;
+        
+        sub_string = strtok(NULL, " ");
+    }
+    *y += 10;
+}
+
+void print_help_text(MenuEventArgs* menuEventArgs) {
+    uint8_t y = 1;
+    gc_FillScrn(0);
+    gc_SetTextColor(7);
+    
+    print_string("How to play:", 1, &y, 0);
+    gc_PrintStringXY("1.", 1, y);
+    print_string("Uncover a mine, and the game ends.", 15, &y, 0);
+    gc_PrintStringXY("2.", 1, y);
+    print_string("Uncover an empty square, and you keep playing.", 15, &y, 0);
+    gc_PrintStringXY("3.", 1, y);
+    print_string("Uncover a number, and it tells you how many mines lay hidden in the eight surrounding squares--information you use to deduce which nearby squares are safe to click.", 15, &y, 0);
+    
+    print_string("", 1, &y, 0);
+    print_string("Controls:", 1, &y, 0);
+    print_string("Arrows - Move the cursor", 1, &y, 0);
+    print_string("2nd - Uncover the spot at the cursor location", 1, &y, gc_StringWidth("2nd-") + 16);
+    print_string("Alpha - Flag the spot at the cursor location", 1, &y, gc_StringWidth("Alpha-") + 16);
+    print_string("Del - Return to the title screen", 1, &y, 0);
+
+    print_string("", 1, &y, 0);
+    print_string("Advanced:", 1, &y, 0);
+    print_string("If you press 2nd on an already uncovered spot that has a number of mines around it, and you have flagged the correct number of mines, all non-flagged spots around it will be uncovered.", 1, &y, 0);
+
+    while (!Key_isDown(Key_Del)) {
+        Key_scanKeys(0);
+    }
+
+    return;
 }
 
 void win_game(Minefield* minefield) {
