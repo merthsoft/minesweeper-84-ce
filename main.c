@@ -80,7 +80,7 @@ void draw_demo_board(MenuEventArgs* menuEventArgs) {
 
     gc_SetTextColor(7);
     gc_PrintStringXY("Merthsoft  '16", 222, 230);
-    gc_PrintStringXY("v0.9", 290, 32);
+    gc_PrintStringXY("v0.91", 280, 32);
 }
 
 void main_game_loop(MenuEventArgs* menuEventArgs) {
