@@ -156,13 +156,19 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
     minefield_delete(minefield);
 }
 
-void print_string(const char* string, uint16_t x, uint8_t* y, uint16_t indent) {
+void print_string(char* string, uint16_t x, uint8_t* y, uint16_t indent) {
+    char* string_copy;
     char* sub_string;
+    size_t string_length;
     uint16_t drawX = x;
     uint16_t space_width;
     space_width = 8;//gc_StringWidth(" ");
 
-    sub_string = strtok(string, " ");
+    string_length = strlen(string);
+    string_copy = malloc(string_length);
+    strcpy(string_copy, string);
+
+    sub_string = strtok(string_copy, " ");
     while (sub_string != NULL) {
         unsigned int width;
         width = gc_StringWidth(sub_string);
@@ -176,6 +182,8 @@ void print_string(const char* string, uint16_t x, uint8_t* y, uint16_t indent) {
         sub_string = strtok(NULL, " ");
     }
     *y += 10;
+
+    free(string_copy);
 }
 
 void print_help_text(MenuEventArgs* menuEventArgs) {
