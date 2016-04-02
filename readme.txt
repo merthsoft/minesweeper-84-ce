@@ -18,4 +18,7 @@ Thanks to Tari for all his programming help. I'm bad at C, and he is significant
 
 Revision History:
 
-v0.9 2016.04.02 - Beta Release
+v0.91 2016.04.02 - Beta Release
+                   Fixed helptext issues
+                   New 2 and 3 sprites from kerm 
+v0.9  2016.04.02 - Beta Release
