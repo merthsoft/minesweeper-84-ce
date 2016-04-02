@@ -53,11 +53,13 @@ void main(void) {
     main_menu->Items[0].Name = "Play";
     main_menu->Items[0].Function = main_game_loop;
     main_menu->Items[1].Name = "Difficulty";
+    main_menu->Items[1].Function = settings_setup;
     main_menu->Items[2].Name = "Help";
     main_menu->Items[3].Name = "Quit";
     main_menu->Items[3].Function = MENU_FUNCTION_BACK;
 
     menu_display(main_menu);
+    menu_delete(main_menu);
 
     Key_reset();
     gc_CloseGraph();
@@ -77,9 +79,6 @@ void draw_demo_board(MenuEventArgs* menuEventArgs) {
 
     gc_SetTextColor(7);
     gc_PrintStringXY("Merthsoft  '16", 222, 230);
-    gc_FillScrn(0);
-    gc_SetTextXY(0, 0);
-    gc_PrintUnsignedInt(menuEventArgs->FrameNumber, 8);
 }
 
 void main_game_loop(MenuEventArgs* menuEventArgs) {
@@ -94,12 +93,17 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
     
     settings = (Settings*)menuEventArgs->Menu->Tag;
     minefield = minefield_create(settings->width, settings->height, settings->num_mines);
+    sprintf(dbgout, "%p\n", minefield);
     gc_FillScrn(0);
 
     while (!Key_isDown(Key_Del)) {
+        gc_SetTextColor(7);
+        gc_SetTextXY(1, 1);
+        gc_PrintString("Mines:  ");
+        gc_PrintInt(minefield->numFlags, 2);
+        gc_PrintString(" / ");
+        gc_PrintInt(minefield->numMines, 2);
         if (redraw) {
-            gc_SetTextColor(7);
-
             minefield_draw_in_game_field(minefield);
             redraw = false;
         }
@@ -116,14 +120,14 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
         else if (Key_isDown(Key_Right)) { x = x == minefield->fieldWidth - 1 ? 0 : x + 1; } 
         else if (Key_justPressed(Key_2nd)) {
             if (minefield->visibleField[x][y] != FLAGGED && minefield->visibleField[x][y] != 0) {
-                int8_t num;
-                num = minefield_cascade(minefield, x, y);
-                if (num == -1) {
+                minefield_cascade(minefield, x, y);
+
+                if (minefield->gameState == GameState_Lost) {
                     die(minefield, x, y);
                     return;
                 }
                 
-                if (minefield->totalVisible == minefield->totalNonMineTiles) {
+                if (minefield->gameState == GameState_Won) {
                     win_game(minefield);
                     return;
                 }
@@ -152,18 +156,11 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
 }
 
 void win_game(Minefield* minefield) {
-    int8_t i, j;
-    for (i = 0; i < minefield->fieldWidth; i++) {
-        for (j = 0; j < minefield->fieldHeight; j++) {
-            minefield_draw_visible_tile(minefield, i, j);
-            if (minefield->mines[i][j]) {
-                minefield_draw_tile(minefield, win, i, j);
-            }
-        }
-    }
-    //DefineStatusMessage("  Minesweeper!    You win! :D", 1, 0, 0);
-    //DisplayStatusArea();
-    //SetBottomText("                            New");
+    minefield_draw_win_field(minefield);
+
+    gc_SetTextColor(7);
+    gc_SetTextXY(1, 1);
+    gc_PrintString("You win! :D Press enter.");
 
     do {
         Key_scanKeys(0);
@@ -171,24 +168,11 @@ void win_game(Minefield* minefield) {
 }
 
 void die(Minefield* minefield, int8_t cursorX, int8_t cursorY) {
-    int8_t i, j;
-    for (i = 0; i < minefield->fieldWidth; i++) {
-        for (j = 0; j < minefield->fieldHeight; j++) {
-            minefield_draw_visible_tile(minefield, i, j);
-            if (minefield->mines[i][j]) {
-                if ((i == cursorX && j == cursorY) || (minefield->visibleField[i][j] == EXPLOSION)) {
-                    minefield_draw_tile(minefield, explode, i, j);
-                } else {
-                    minefield_draw_tile(minefield, minefield->visibleField[i][j] == FLAGGED ? flagged : mine, i, j);
-                }
-            } else if (minefield->visibleField[i][j] == FLAGGED) {
-                minefield_draw_tile(minefield, misflagged, i, j);
-            }
-        }
-    }
-    /*DefineStatusMessage("  Minesweeper!    You lose! D:", 1, 0, 0);
-    DisplayStatusArea();
-    SetBottomText("                            New");*/
+    minefield_draw_die_field(minefield, cursorX, cursorY);
+
+    gc_SetTextColor(7);
+    gc_SetTextXY(1, 1);
+    gc_PrintString("You lose! D: Press enter.");
 
     do {
         Key_scanKeys(0);

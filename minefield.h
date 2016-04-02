@@ -28,6 +28,12 @@
 #define LCD_WIDTH_PX 320
 #define LCD_HEIGHT_PX 240
 
+typedef enum GameState {
+    GameState_Running = 0,
+    GameState_Won = 1,
+    GameState_Lost = 2
+} GameState;
+
 typedef struct Minefield {
     int8_t numMines;
     int8_t fieldWidth;
@@ -36,22 +42,23 @@ typedef struct Minefield {
     int8_t xOff;
     int8_t yOff;
 
-    int8_t totalVisible;
-    int8_t totalNonMineTiles;
+    int totalVisible;
+    int totalNonMineTiles;
     int8_t numFlags;
 
     int8_t** visibleField;
     int8_t** mines;
 
     bool fieldsGenerated;
+
+    GameState gameState;
 } Minefield;
 
 Minefield* minefield_create(int8_t width, int8_t height, int8_t numMines);
 void minefield_delete(Minefield* minefield);
 
-int8_t minefield_cascade(Minefield* minefield, int8_t x, int8_t y);
-int8_t minefield_count_flags(Minefield* minefield, int8_t x, int8_t y);
-int8_t minefield_count_neighbors(Minefield* minefield, int8_t x, int8_t y);
+void minefield_cascade(Minefield* minefield, int8_t x, int8_t y);
+
 void minefield_draw_tile(Minefield* minefield, uint8_t* tile, int8_t i, int8_t j);
 uint8_t* minefield_get_tile(int8_t tileNum);
 void minefield_draw_visible_tile(Minefield* minefield, int8_t i, int8_t j);

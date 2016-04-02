@@ -14,7 +14,11 @@ void set_difficulty(MenuEventArgs* menu_event_args) {
 
 void settings_setup(MenuEventArgs* menu_event_args) {
     Menu* menu;
-    menu = menu_create(3, "Difficulty");
+    int8_t num_mines[3] = { 10, 20, 36 };
+    int8_t i;
+    Settings* settings = (Settings*)menu_event_args->Menu->Tag;
+
+    menu = menu_create(4, "Difficulty");
     menu->TextBackgroundColor = 0;
     menu->TextForegroundColor = 7;
     menu->ClearColor = 0;
@@ -34,4 +38,14 @@ void settings_setup(MenuEventArgs* menu_event_args) {
 
     menu->Items[3].Name = "Back";
     menu->Items[3].Function = MENU_FUNCTION_BACK;
+
+    for (i = 0; i < 3; i++) {
+        if (settings->num_mines == num_mines[i]) {
+            menu->Items[i].Selected = true;
+            break;
+        }
+    }
+
+    menu_display(menu);
+    menu_delete(menu);
 }

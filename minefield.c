@@ -50,7 +50,7 @@ Minefield* minefield_create(int8_t width, int8_t height, int8_t numMines) {
     }
 
     minefield_create_fields(minefield, 0, 0);
-
+    minefield->gameState = GameState_Running;
     return minefield;
 }
 
@@ -70,57 +70,6 @@ void minefield_delete(Minefield* minefield) {
 
 void minefield_draw_tile(Minefield* minefield, uint8_t* tile, int8_t i, int8_t j) {
     gc_NoClipDrawTransparentSprite(tile, i * TILE_WIDTH + minefield->xOff, j * TILE_HEIGHT + minefield->yOff, TILE_WIDTH, TILE_HEIGHT);
-}
-
-int8_t minefield_cascade_internal(Minefield* minefield, int8_t x, int8_t y, bool initialClick) {
-    int8_t i, j;
-    int8_t num;
-    int8_t neighbors;
-    int8_t cas;
-
-    if (!minefield->fieldsGenerated) {
-        minefield_create_fields(minefield, x, y);
-    }
-
-    if (x < 0 || y < 0 || x >= minefield->fieldWidth || y >= minefield->fieldHeight) { return 0; }
-    if (minefield->visibleField[x][y] == FLAGGED || minefield->visibleField[x][y] == 0) { return 0; }
-    if (minefield->mines[x][y] == 1) {
-        minefield->visibleField[x][y] = EXPLOSION;
-        return -1;
-    }
-    if (minefield->visibleField[x][y] > 0) {
-        if (!initialClick) { return 0; }
-        if (minefield->visibleField[x][y] != minefield_count_flags(minefield, x, y)) { return 0; }
-        num = 0;
-        for (i = -1; i <= 1; i++) {
-            for (j = -1; j <= 1; j++) {
-                cas = minefield_cascade_internal(minefield, x + i, y + j, false);
-                if (cas == -1) { return -1; } else { num += cas; }
-            }
-        }
-
-        minefield->totalVisible += num;
-        return num;
-    }
-
-    neighbors = minefield_count_neighbors(minefield, x, y);
-    minefield->visibleField[x][y] = neighbors;
-    num = 1;
-
-    if (neighbors == 0) {
-        for (i = -1; i <= 1; i++) {
-            for (j = -1; j <= 1; j++) {
-                num += minefield_cascade_internal(minefield, x + i, y + j, false);
-            }
-        }
-    }
-
-    minefield->totalVisible += num;
-    return num;
-}
-
-int8_t minefield_cascade(Minefield* minefield, int8_t x, int8_t y) {
-    return minefield_cascade_internal(minefield, x, y, true);
 }
 
 int8_t minefield_count_flags(Minefield* minefield, int8_t x, int8_t y) {
@@ -144,12 +93,68 @@ int8_t minefield_count_neighbors(Minefield* minefield, int8_t x, int8_t y) {
         for (j = -1; j <= 1; j++) {
             if (x + i < 0 || y + j < 0) { continue; }
             if (x + i >= minefield->fieldWidth || y + j >= minefield->fieldHeight) { continue; }
-            
-            neighbors += minefield->mines[x + i][y + j];
+
+            if (minefield->mines[x + i][y + j]) {
+                neighbors++;
+            }
         }
     }
 
     return neighbors;
+}
+
+bool minefield_cascade_internal(Minefield* minefield, int8_t x, int8_t y, bool initialClick) {
+    int8_t i, j;
+    int8_t neighbors;
+
+    if (!minefield->fieldsGenerated) {
+        minefield_create_fields(minefield, x, y);
+    }
+
+    if (x < 0 || y < 0 || x >= minefield->fieldWidth || y >= minefield->fieldHeight) { return false; }
+    if (minefield->visibleField[x][y] == FLAGGED || minefield->visibleField[x][y] == 0) { return false; }
+
+    if (minefield->mines[x][y] == 1) {
+        minefield->visibleField[x][y] = EXPLOSION;
+        return true;
+    }
+
+    if (minefield->visibleField[x][y] > 0) {
+        if (minefield->visibleField[x][y] != minefield_count_flags(minefield, x, y)) { return false; }
+        if (!initialClick) { return false; }
+        
+        for (i = -1; i <= 1; i++) {
+            for (j = -1; j <= 1; j++) {
+                if (minefield_cascade_internal(minefield, x + i, y + j, false)) { return true; }
+            }
+        }
+        return false;
+    }
+
+    neighbors = minefield_count_neighbors(minefield, x, y);
+    minefield->visibleField[x][y] = neighbors;
+    minefield->totalVisible += 1;
+    
+    if (neighbors == 0) {
+        for (i = -1; i <= 1; i++) {
+            for (j = -1; j <= 1; j++) {
+                minefield_cascade_internal(minefield, x + i, y + j, false);
+            }
+        }
+    }
+    return false;
+}
+
+void minefield_cascade(Minefield* minefield, int8_t x, int8_t y) {
+    bool hit_mine;
+    hit_mine = minefield_cascade_internal(minefield, x, y, true);
+    if (hit_mine) {
+        minefield->gameState = GameState_Lost;
+    } else {
+        if (minefield->totalVisible == minefield->totalNonMineTiles) {
+            minefield->gameState = GameState_Won;
+        }
+    }
 }
 
 void minefield_create_fields(Minefield* minefield, int8_t x, int8_t y) {
@@ -187,6 +192,37 @@ void minefield_draw_demo_field(Minefield* minefield) {
                 minefield_draw_tile(minefield, mine, i, j);
             } else {
                 minefield_draw_tile(minefield, minefield_get_tile(minefield_count_neighbors(minefield, i, j)), i, j);
+            }
+        }
+    }
+}
+
+void minefield_draw_die_field(Minefield* minefield, int8_t x, int8_t y) {
+    int8_t i, j;
+
+    for (i = 0; i < minefield->fieldWidth; i++) {
+        for (j = 0; j < minefield->fieldHeight; j++) {
+            minefield_draw_visible_tile(minefield, i, j);
+            if (minefield->mines[i][j]) {
+                if ((i == x && j == y) || (minefield->visibleField[i][j] == EXPLOSION)) {
+                    minefield_draw_tile(minefield, explode, i, j);
+                } else {
+                    minefield_draw_tile(minefield, minefield->visibleField[i][j] == FLAGGED ? flagged : mine, i, j);
+                }
+            } else if (minefield->visibleField[i][j] == FLAGGED) {
+                minefield_draw_tile(minefield, misflagged, i, j);
+            }
+        }
+    }
+}
+
+void minefield_draw_win_field(Minefield* minefield) {
+    int8_t i, j;
+    for (i = 0; i < minefield->fieldWidth; i++) {
+        for (j = 0; j < minefield->fieldHeight; j++) {
+            minefield_draw_visible_tile(minefield, i, j);
+            if (minefield->mines[i][j]) {
+                minefield_draw_tile(minefield, win, i, j);
             }
         }
     }
