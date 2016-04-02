@@ -6,8 +6,8 @@
 
 #include "key_helper.h"
 
-#define FUNCTION_BACK (void*)1
-#define FUNCTION_NONE (void*)0
+#define MENU_FUNCTION_BACK (void*)1
+#define MENU_FUNCTION_NONE (void*)0
 
 typedef struct MenuItem {
     char* Name;
@@ -53,10 +53,10 @@ typedef struct MenuEventArgs {
     bool Back;
 } MenuEventArgs;
 
-char* BackString = "Back";
+char* menu_back_string = "Back";
 
-Menu* Menu_create(uint8_t numItems, const char* title);
-void Menu_delete(Menu* menu);
-int Menu_display(Menu* menu);
+Menu* menu_create(uint8_t numItems, const char* title);
+void menu_delete(Menu* menu);
+int menu_display(Menu* menu);
 
 #endif MENU_H

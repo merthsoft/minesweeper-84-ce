@@ -94,9 +94,11 @@ makece shell=cmd.exe</NMakeReBuildCommandLine>
     <ClCompile Include="main.c" />
     <ClCompile Include="menu.c" />
     <ClCompile Include="mine.c" />
+    <ClCompile Include="minefield.c" />
     <ClCompile Include="misflagged.c" />
     <ClCompile Include="one.c" />
     <ClCompile Include="question.c" />
+    <ClCompile Include="settings.c" />
     <ClCompile Include="seven.c" />
     <ClCompile Include="six.c" />
     <ClCompile Include="sprites.c" />
@@ -131,6 +133,8 @@ makece shell=cmd.exe</NMakeReBuildCommandLine>
     <ClInclude Include="main.h" />
     <ClInclude Include="menu.h" />
     <ClInclude Include="menu_sprites.h" />
+    <ClInclude Include="minefield.h" />
+    <ClInclude Include="settings.h" />
     <ClInclude Include="sprites.h" />
   </ItemGroup>
   <ItemGroup>

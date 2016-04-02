@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <debug.h>
 
 #include <lib/ce/graphc.h>
 #include <lib/ce/fileioc.h>
@@ -11,13 +12,13 @@
 #include "menu.h"
 #include "menu_sprites.h"
 
-Menu* Menu_create(uint8_t numItems, const char* title) {
+Menu* menu_create(uint8_t numItems, const char* title) {
     uint8_t i;
 
     Menu* menu = malloc(numItems * sizeof(Menu));
     menu->Items = malloc(numItems * sizeof(MenuItem));
     for (i = 0; i < numItems; i++) {
-        menu->Items[i].Function = FUNCTION_NONE;
+        menu->Items[i].Function = MENU_FUNCTION_NONE;
         menu->Items[i].Name = "";
         menu->Items[i].Selected = false;
         menu->Items[i].Tag = NULL;
@@ -25,7 +26,7 @@ Menu* Menu_create(uint8_t numItems, const char* title) {
     menu->NumItems = numItems;
 
     menu->Title = title;
-    menu->ExtraFunction = FUNCTION_NONE;
+    menu->ExtraFunction = MENU_FUNCTION_NONE;
     menu->BackKey = 0;
     menu->CursorChar = 0x10;
     menu->Tag = NULL;
@@ -40,12 +41,12 @@ Menu* Menu_create(uint8_t numItems, const char* title) {
     return menu;
 }
 
-void Menu_delete(Menu* menu) {
+void menu_delete(Menu* menu) {
     free(menu->Items);
     free(menu);
 }
 
-int Menu_display(Menu* menu) {
+int menu_display(Menu* menu) {
     uint8_t i;
     uint8_t y = 1;
     uint8_t old_y = 1;
@@ -57,6 +58,7 @@ int Menu_display(Menu* menu) {
     uint32_t frameNumber = 0;
     MenuEventArgs* eventArgs;
     bool back = false;
+    void(*func)(MenuEventArgs*);
 
     if (menu->SelectionType != MenuSelectionType_None) {
         extraTextPadding = linePadding;
@@ -80,7 +82,7 @@ int Menu_display(Menu* menu) {
         for (i = 0; i < menu->NumItems; i++) {
             gc_PrintStringXY(menu->Items[i].Name, menu->XLocation + textPadding + extraTextPadding, menu->YLocation + 3 + linePadding + linePadding * i);
 
-            if (menu->SelectionType != MenuSelectionType_None && menu->Items[i].Function != FUNCTION_BACK) {
+            if (menu->SelectionType != MenuSelectionType_None && menu->Items[i].Function != MENU_FUNCTION_BACK) {
                 if (menu->Items[i].Selected) {
                     previouslySelectedIndex = i;
                     selected = true;
@@ -104,8 +106,8 @@ int Menu_display(Menu* menu) {
         Key_scanKeys(0);
         old_y = y;
         
-        if (menu->ExtraFunction != FUNCTION_NONE) {
-            void(*func)(MenuEventArgs*) = menu->ExtraFunction;
+        if (menu->ExtraFunction != MENU_FUNCTION_NONE) {
+            func = menu->ExtraFunction;
             eventArgs->FrameNumber = frameNumber;
             eventArgs->Menu = menu;
             eventArgs->Index = y - 1;
@@ -122,9 +124,9 @@ int Menu_display(Menu* menu) {
         else if (Key_justPressed(Key_Down)) { y = y == menu->NumItems ? 1 : y + 1; }
         else if (Key_justPressed(Key_2nd) || Key_justPressed(Key_Enter)) {
             uint8_t index = y - 1;
-            void(*func)(MenuEventArgs*) = menu->Items[index].Function;
+            func = menu->Items[index].Function;
 
-            if (menu->SelectionType != MenuSelectionType_None && menu->Items[y - 1].Function != FUNCTION_BACK) {
+            if (menu->SelectionType != MenuSelectionType_None && menu->Items[y - 1].Function != MENU_FUNCTION_BACK) {
                 switch (menu->SelectionType) {
                     case MenuSelectionType_Single:
                         if (index != previouslySelectedIndex) {
@@ -138,8 +140,8 @@ int Menu_display(Menu* menu) {
                 }
             } 
             
-            if (func == FUNCTION_BACK) { back = true; }
-            else if (func != FUNCTION_NONE) { 
+            if (func == MENU_FUNCTION_BACK) { back = true; }
+            else if (func != MENU_FUNCTION_NONE) { 
                 eventArgs->FrameNumber = frameNumber;
                 eventArgs->Menu = menu;
                 eventArgs->Index = index;

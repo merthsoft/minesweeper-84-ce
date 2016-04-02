@@ -63,10 +63,10 @@ void Key_scanKeys(uint32_t keyDelay) {
         for (j = 0; j < NUM_KEY_ELEMENTS; j++) {
             kb_dataArray[j] = debounceKeys[j];
         }
-        free(debounceKeys);
     } else {
         kb_Scan();
     }
+    free(debounceKeys);
 }
 
 void Key_reset() { 
