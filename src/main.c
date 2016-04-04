@@ -79,7 +79,7 @@ void draw_demo_board(MenuEventArgs* menuEventArgs) {
     gc_ClipDrawTransparentSprite(logo2, 221, 9, logo2_width, logo2_height);
 
     gc_PrintStringXY("Merthsoft  '16", 222, 230);
-    gc_PrintStringXY("v0.91", 280, 32);
+    gc_PrintStringXY("v1.0", 290, 32);
 }
 
 void main_game_loop(MenuEventArgs* menuEventArgs) {
@@ -97,7 +97,6 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
     gc_FillScrn(BACKGROUND_COLOR);
 
     while (!Key_isDown(Key_Del)) {
-        gc_SetTextColor(7);
         gc_SetTextXY(1, 1);
         gc_PrintString("Mines:  ");
         gc_PrintInt(minefield->numFlags, 2);
