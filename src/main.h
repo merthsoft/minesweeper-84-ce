@@ -16,11 +16,8 @@
 #include "minefield.h"
 #include "menu.h"
 
-bool dead = 0;
-bool newGame = 1;
-
-#define draw_rect_fill(x, y, w, h, color_index)     gc_SetColorIndex(color_index); gc_NoClipRectangle(x, y, w, h);
-#define draw_rect(x, y, w, h, color_index)          gc_SetColorIndex(color_index); gc_NoClipRectangleOutline(x, y, w, h);
+#define BACKGROUND_COLOR 1
+#define FOREGROUND_COLOR 0
 
 void main_game_loop(MenuEventArgs* menuEventArgs);
 void die(Minefield* minefield, int8_t cursorX, int8_t cursorY);

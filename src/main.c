@@ -15,7 +15,7 @@
 #include <lib\ce\graphc.h>
 
 #include "main.h"
-#include "sprites.h"
+#include "gfx/sprites.h"
 #include "key_helper.h"
 #include "menu.h"
 #include "minefield.h"
@@ -33,7 +33,7 @@ void main(void) {
     
     gc_SetPalette(sprites_pal, sizeof(sprites_pal));
     gc_SetTransparentColor(sprites_transpcolor_index);
-    gc_FillScrn(0);
+    gc_FillScrn(BACKGROUND_COLOR);
 
     main_menu = menu_create(4, NULL);
     
@@ -42,13 +42,13 @@ void main(void) {
     main_menu->XLocation = 130;
     main_menu->YLocation = 188;
     
-    main_menu->TextBackgroundColor = 0;
-    main_menu->TextForegroundColor = 7;
-    main_menu->ClearColor = 0;
+    main_menu->TextBackgroundColor = BACKGROUND_COLOR;
+    main_menu->TextForegroundColor = FOREGROUND_COLOR;
+    main_menu->ClearColor = BACKGROUND_COLOR;
     main_menu->BackKey = Key_Del;
     main_menu->Tag = &settings;
 
-    main_menu->ClearScreen = 0;
+    main_menu->ClearScreen = false;
     
     main_menu->Items[0].Name = "Play";
     main_menu->Items[0].Function = main_game_loop;
@@ -78,7 +78,6 @@ void draw_demo_board(MenuEventArgs* menuEventArgs) {
     gc_ClipDrawTransparentSprite(logo1, 3, 9, logo1_width, logo1_height);
     gc_ClipDrawTransparentSprite(logo2, 221, 9, logo2_width, logo2_height);
 
-    gc_SetTextColor(7);
     gc_PrintStringXY("Merthsoft  '16", 222, 230);
     gc_PrintStringXY("v0.91", 280, 32);
 }
@@ -95,7 +94,7 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
     
     settings = (Settings*)menuEventArgs->Menu->Tag;
     minefield = minefield_create(settings->width, settings->height, settings->num_mines);
-    gc_FillScrn(0);
+    gc_FillScrn(BACKGROUND_COLOR);
 
     while (!Key_isDown(Key_Del)) {
         gc_SetTextColor(7);
@@ -188,8 +187,7 @@ void print_string(char* string, uint16_t x, uint8_t* y, uint16_t indent) {
 
 void print_help_text(MenuEventArgs* menuEventArgs) {
     uint8_t y = 1;
-    gc_FillScrn(0);
-    gc_SetTextColor(7);
+    gc_FillScrn(BACKGROUND_COLOR);
     
     print_string("How to play:", 1, &y, 0);
     gc_PrintStringXY("1.", 1, y);
@@ -220,7 +218,6 @@ void print_help_text(MenuEventArgs* menuEventArgs) {
 void win_game(Minefield* minefield) {
     minefield_draw_win_field(minefield);
 
-    gc_SetTextColor(7);
     gc_SetTextXY(1, 1);
     gc_PrintString("You win! :D Press enter.");
 
@@ -232,7 +229,6 @@ void win_game(Minefield* minefield) {
 void die(Minefield* minefield, int8_t cursorX, int8_t cursorY) {
     minefield_draw_die_field(minefield, cursorX, cursorY);
 
-    gc_SetTextColor(7);
     gc_SetTextXY(1, 1);
     gc_PrintString("You lose! D: Press enter.");
 

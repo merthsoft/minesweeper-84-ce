@@ -14,7 +14,7 @@
 #include <lib\ce\graphc.h>
 
 #include "minefield.h"
-#include "sprites.h"
+#include "gfx/sprites.h"
 
 void minefield_create_fields(Minefield* minefield, int8_t x, int8_t y);
 

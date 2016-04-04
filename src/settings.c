@@ -19,9 +19,9 @@ void settings_setup(MenuEventArgs* menu_event_args) {
     Settings* settings = (Settings*)menu_event_args->Menu->Tag;
 
     menu = menu_create(4, "Difficulty");
-    menu->TextBackgroundColor = 0;
-    menu->TextForegroundColor = 7;
-    menu->ClearColor = 0;
+    menu->TextBackgroundColor = menu_event_args->Menu->TextBackgroundColor;
+    menu->TextForegroundColor = menu_event_args->Menu->TextForegroundColor;
+    menu->ClearColor = menu_event_args->Menu->ClearColor;
     menu->BackKey = Key_Del;
     menu->Tag = menu_event_args->Menu->Tag;
 

@@ -24,166 +24,169 @@
     <Text Include="readme.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.c">
+    <ClCompile Include="src\key_helper.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="eight.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="explode.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="filled.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="five.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="flagged.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="four.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="mine.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="misflagged.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="one.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="question.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="seven.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="six.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="sprites.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="three.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="two.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="win.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="zero.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="key_helper.c">
+    <ClCompile Include="src\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="menu.c">
+    <ClCompile Include="src\menu.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cursor.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="logo1.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="logo2.c">
-      <Filter>Source Files\sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="minefield.c">
+    <ClCompile Include="src\minefield.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="settings.c">
+    <ClCompile Include="src\settings.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\cursor.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\eight.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\explode.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\filled.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\five.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\flagged.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\four.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\logo1.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\logo2.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\mine.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\misflagged.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\one.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\question.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\seven.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\six.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\sprites.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\three.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\two.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\win.c">
+      <Filter>Source Files\sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gfx\zero.c">
+      <Filter>Source Files\sprites</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="eight.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="explode.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="filled.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="five.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="flagged.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="four.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="mine.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="misflagged.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="one.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="question.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="seven.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="six.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="three.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="two.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="win.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="zero.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="cursor.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="logo1.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-    <Image Include="logo2.png">
-      <Filter>Resource Files\sprites</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="sprites.h">
+    <ClInclude Include="src\key_helper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="key_helper.h">
+    <ClInclude Include="src\main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="menu.h">
+    <ClInclude Include="src\menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="menu_sprites.h">
+    <ClInclude Include="src\menu_sprites.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="main.h">
+    <ClInclude Include="src\minefield.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="minefield.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="settings.h">
+    <ClInclude Include="src\settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="convpng.ini" />
     <None Include="Makefile" />
+    <None Include="src\gfx\convpng.ini">
+      <Filter>Source Files\sprites</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="src\gfx\cursor.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\eight.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\explode.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\filled.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\five.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\flagged.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\four.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\logo1.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\logo2.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\mine.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\misflagged.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\one.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\question.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\seven.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\six.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\three.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\two.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\win.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="src\gfx\zero.png">
+      <Filter>Resource Files\sprites</Filter>
+    </Image>
+    <Image Include="iconc.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
