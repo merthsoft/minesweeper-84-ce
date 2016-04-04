@@ -22,6 +22,6 @@ Revision History:
 
 v0.91 2016.04.02 - Beta Release
                    Fixed helptext issues
-                   New 2 and 3 sprites from kerm 
+                   New 2 and 3 sprites from kerm
 
 v0.9  2016.04.02 - Beta Release
