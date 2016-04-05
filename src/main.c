@@ -109,15 +109,15 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
         }
         minefield_draw_tile(minefield, cursor, x, y);
 
-        Key_scanKeys(200);
+        Key_scanKeys(0);
 
         old_x = x;
         old_y = y;
 
-        if (Key_isDown(Key_Up)) { y = y == 0 ? minefield->fieldHeight - 1 : y - 1; } 
-        else if (Key_isDown(Key_Down)) { y = y == minefield->fieldHeight - 1 ? 0 : y + 1; } 
-        else if (Key_isDown(Key_Left)) { x = x == 0 ? minefield->fieldWidth - 1 : x - 1; }
-        else if (Key_isDown(Key_Right)) { x = x == minefield->fieldWidth - 1 ? 0 : x + 1; } 
+        if (Key_justPressed(Key_Up)) { y = y == 0 ? minefield->fieldHeight - 1 : y - 1; }
+        else if (Key_justPressed(Key_Down)) { y = y == minefield->fieldHeight - 1 ? 0 : y + 1; }
+        else if (Key_justPressed(Key_Left)) { x = x == 0 ? minefield->fieldWidth - 1 : x - 1; }
+        else if (Key_justPressed(Key_Right)) { x = x == minefield->fieldWidth - 1 ? 0 : x + 1; }
         else if (Key_justPressed(Key_2nd)) {
             if (minefield->visibleField[x][y] != FLAGGED && minefield->visibleField[x][y] != 0) {
                 minefield_cascade(minefield, x, y);
