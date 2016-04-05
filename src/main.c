@@ -79,7 +79,7 @@ void draw_demo_board(MenuEventArgs* menuEventArgs) {
     gc_ClipDrawTransparentSprite(logo2, 221, 9, logo2_width, logo2_height);
 
     gc_PrintStringXY("Merthsoft  '16", 222, 230);
-    gc_PrintStringXY("v1.1", 290, 32);
+    gc_PrintStringXY("v1.2", 290, 32);
 }
 
 void main_game_loop(MenuEventArgs* menuEventArgs) {
