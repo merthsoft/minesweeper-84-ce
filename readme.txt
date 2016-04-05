@@ -1,4 +1,4 @@
-Minesweeper 84+CE v1.0
+Minesweeper 84+CE v1.1
 2016 Merthsoft Creations
 shaun@shaunmcfall.com
 
@@ -19,6 +19,8 @@ Thanks to Tari for all his programming help. I'm bad at C, and he is significant
 Andrew Milne created the art assets, and Kerm modified some sprites to make them look a little better on-screen.
 
 Revision History:
+
+v1.1  2016.04.04 - Fix memory leak
 
 v1.0  2016.04.03 - First full release
 

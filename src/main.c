@@ -79,7 +79,7 @@ void draw_demo_board(MenuEventArgs* menuEventArgs) {
     gc_ClipDrawTransparentSprite(logo2, 221, 9, logo2_width, logo2_height);
 
     gc_PrintStringXY("Merthsoft  '16", 222, 230);
-    gc_PrintStringXY("v1.0", 290, 32);
+    gc_PrintStringXY("v1.1", 290, 32);
 }
 
 void main_game_loop(MenuEventArgs* menuEventArgs) {
@@ -91,12 +91,13 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
     bool flag = false;
     Minefield* minefield;
     Settings* settings;
+    bool quit = false;
     
     settings = (Settings*)menuEventArgs->Menu->Tag;
     minefield = minefield_create(settings->width, settings->height, settings->num_mines);
     gc_FillScrn(BACKGROUND_COLOR);
 
-    while (!Key_isDown(Key_Del)) {
+    while (!quit) {
         gc_SetTextXY(1, 1);
         gc_PrintString("Mines:  ");
         gc_PrintInt(minefield->numFlags, 2);
@@ -123,14 +124,13 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
 
                 if (minefield->gameState == GameState_Lost) {
                     die(minefield, x, y);
-                    return;
-                }
-                
-                if (minefield->gameState == GameState_Won) {
+                    quit = true;
+                } else if (minefield->gameState == GameState_Won) {
                     win_game(minefield);
-                    return;
+                    quit = true;
+                } else {
+                    redraw = true;
                 }
-                redraw = true;
             }
         } else if (Key_justPressed(Key_Alpha)) {
             if (minefield->visibleField[x][y] == FILLED) {
@@ -143,6 +143,8 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
                 minefield->visibleField[x][y] = FILLED;
             }
             flag = true;
+        } else if (Key_justPressed(Key_Del)) {
+            quit = true;
         }
 
         if (old_x != x || old_y != y || flag) {
