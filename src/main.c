@@ -12,16 +12,16 @@
 #include <string.h>
 
 /* Shared libraries */
-#include <lib\ce\graphc.h>
+#include <graphx.h>
 
 #include "main.h"
-#include "gfx/sprites.h"
+#include "gfx/gfx.h"
 #include "key_helper.h"
 #include "menu.h"
 #include "minefield.h"
 #include "settings.h"
 
-void main(void) {
+int main(void) {
     Menu* main_menu;
     Settings settings;
     settings.height = 8;
@@ -29,11 +29,11 @@ void main(void) {
     settings.num_mines = 10;
     
     Key_init();
-    gc_InitGraph();
+    gfx_Begin();
     
-    gc_SetPalette(sprites_pal, sizeof(sprites_pal));
-    gc_SetTransparentColor(sprites_transpcolor_index);
-    gc_FillScrn(BACKGROUND_COLOR);
+    gfx_SetPalette(global_palette, sizeof_global_palette, 0);
+    gfx_SetTransparentColor(0);
+    gfx_FillScreen(BACKGROUND_COLOR);
 
     main_menu = menu_create(4, NULL);
     
@@ -45,7 +45,7 @@ void main(void) {
     main_menu->TextBackgroundColor = BACKGROUND_COLOR;
     main_menu->TextForegroundColor = FOREGROUND_COLOR;
     main_menu->ClearColor = BACKGROUND_COLOR;
-    main_menu->BackKey = Key_Del;
+    main_menu->BackKey = Key_Clear;
     main_menu->Tag = &settings;
 
     main_menu->ClearScreen = false;
@@ -63,7 +63,7 @@ void main(void) {
     menu_delete(main_menu);
 
     Key_reset();
-    gc_CloseGraph();
+    gfx_End();
     pgrm_CleanUp();
 }
 
@@ -75,11 +75,11 @@ void draw_demo_board(MenuEventArgs* menuEventArgs) {
         minefield_delete(minefield);
     }
 
-    gc_ClipDrawTransparentSprite(logo1, 3, 9, logo1_width, logo1_height);
-    gc_ClipDrawTransparentSprite(logo2, 221, 9, logo2_width, logo2_height);
+    gfx_TransparentSprite(logo1, 3, 9);
+    gfx_TransparentSprite(logo2, 221, 9);
 
-    gc_PrintStringXY("Merthsoft  '16", 222, 230);
-    gc_PrintStringXY("v1.2", 290, 32);
+    gfx_PrintStringXY("Merthsoft  '24", 222, 230);
+    gfx_PrintStringXY("v1.3", 290, 32);
 }
 
 void main_game_loop(MenuEventArgs* menuEventArgs) {
@@ -95,14 +95,20 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
     
     settings = (Settings*)menuEventArgs->Menu->Tag;
     minefield = minefield_create(settings->width, settings->height, settings->num_mines);
-    gc_FillScrn(BACKGROUND_COLOR);
+    gfx_FillScreen(BACKGROUND_COLOR);
 
+    int8_t prevFlags = -1;
     while (!quit) {
-        gc_SetTextXY(1, 1);
-        gc_PrintString("Mines:  ");
-        gc_PrintInt(minefield->numFlags, 2);
-        gc_PrintString(" / ");
-        gc_PrintInt(minefield->numMines, 2);
+        if (prevFlags != minefield->numFlags) {
+            gfx_SetColor(BACKGROUND_COLOR);
+            gfx_FillRectangle_NoClip(0, 0, 320, 8);
+            gfx_SetTextXY(1, 1);
+            gfx_PrintString("Mines:  ");
+            gfx_PrintInt(minefield->numFlags, 2);
+            gfx_PrintString(" / ");
+            gfx_PrintInt(minefield->numMines, 2);
+            prevFlags = minefield->numFlags;
+        }
         if (redraw) {
             minefield_draw_in_game_field(minefield);
             redraw = false;
@@ -143,7 +149,7 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
                 minefield->visibleField[x][y] = FILLED;
             }
             flag = true;
-        } else if (Key_justPressed(Key_Del)) {
+        } else if (Key_justPressed(Key_Clear) || Key_justPressed(Key_Mode)) {
             quit = true;
         }
 
@@ -162,7 +168,7 @@ void print_string(char* string, uint16_t x, uint8_t* y, uint16_t indent) {
     size_t string_length;
     uint16_t drawX = x;
     uint16_t space_width;
-    space_width = 8;//gc_StringWidth(" ");
+    space_width = 8;//gfx_StringWidth(" ");
 
     string_length = strlen(string);
     string_copy = malloc(string_length);
@@ -171,12 +177,12 @@ void print_string(char* string, uint16_t x, uint8_t* y, uint16_t indent) {
     sub_string = strtok(string_copy, " ");
     while (sub_string != NULL) {
         unsigned int width;
-        width = gc_StringWidth(sub_string);
+        width = gfx_GetStringWidth(sub_string);
         if (drawX + width > LCD_WIDTH_PX - 5) {
             *y += 10;
             drawX = x + indent;
         }
-        gc_PrintStringXY(sub_string, drawX, *y);
+        gfx_PrintStringXY(sub_string, drawX, *y);
         drawX += width + space_width;
         
         sub_string = strtok(NULL, " ");
@@ -186,30 +192,30 @@ void print_string(char* string, uint16_t x, uint8_t* y, uint16_t indent) {
     free(string_copy);
 }
 
-void print_help_text(MenuEventArgs* menuEventArgs) {
+void print_help_text(MenuEventArgs* _menuEventArgs) {
     uint8_t y = 1;
-    gc_FillScrn(BACKGROUND_COLOR);
+    gfx_FillScreen(BACKGROUND_COLOR);
     
     print_string("How to play:", 1, &y, 0);
-    gc_PrintStringXY("1.", 1, y);
+    gfx_PrintStringXY("1.", 1, y);
     print_string("Uncover a mine, and the game ends.", 15, &y, 0);
-    gc_PrintStringXY("2.", 1, y);
+    gfx_PrintStringXY("2.", 1, y);
     print_string("Uncover an empty square, and you keep playing.", 15, &y, 0);
-    gc_PrintStringXY("3.", 1, y);
+    gfx_PrintStringXY("3.", 1, y);
     print_string("Uncover a number, and it tells you how many mines lay hidden in the eight surrounding squares--information you use to deduce which nearby squares are safe to click.", 15, &y, 0);
     
     print_string("", 1, &y, 0);
     print_string("Controls:", 1, &y, 0);
     print_string("Arrows - Move the cursor", 1, &y, 0);
-    print_string("2nd - Uncover the spot at the cursor location", 1, &y, gc_StringWidth("2nd-") + 16);
-    print_string("Alpha - Flag the spot at the cursor location", 1, &y, gc_StringWidth("Alpha-") + 16);
-    print_string("Del - Return to the title screen", 1, &y, 0);
+    print_string("2nd - Uncover the spot at the cursor location", 1, &y, gfx_GetStringWidth("2nd-") + 16);
+    print_string("Alpha - Flag the spot at the cursor location", 1, &y, gfx_GetStringWidth("Alpha-") + 16);
+    print_string("Clear - Return to the title screen", 1, &y, 0);
 
     print_string("", 1, &y, 0);
     print_string("Advanced:", 1, &y, 0);
     print_string("If you press 2nd on an already uncovered spot that has a number of mines around it, and you have flagged the correct number of mines, all non-flagged spots around it will be uncovered.", 1, &y, 0);
 
-    while (!Key_isDown(Key_Del)) {
+    while (!Key_isDown(Key_Clear)) {
         Key_scanKeys(0);
     }
 
@@ -219,8 +225,10 @@ void print_help_text(MenuEventArgs* menuEventArgs) {
 void win_game(Minefield* minefield) {
     minefield_draw_win_field(minefield);
 
-    gc_SetTextXY(1, 1);
-    gc_PrintString("You win! :D Press enter.");
+    gfx_SetColor(BACKGROUND_COLOR);
+    gfx_FillRectangle_NoClip(0, 0, 320, 8);
+    gfx_SetTextXY(1, 1);
+    gfx_PrintString("You win! :D Press enter.");
 
     do {
         Key_scanKeys(0);
@@ -229,9 +237,11 @@ void win_game(Minefield* minefield) {
 
 void die(Minefield* minefield, int8_t cursorX, int8_t cursorY) {
     minefield_draw_die_field(minefield, cursorX, cursorY);
-
-    gc_SetTextXY(1, 1);
-    gc_PrintString("You lose! D: Press enter.");
+    
+    gfx_SetColor(BACKGROUND_COLOR);
+    gfx_FillRectangle_NoClip(0, 0, 320, 8);
+    gfx_SetTextXY(1, 1);
+    gfx_PrintString("You lose! D: Press enter.");
 
     do {
         Key_scanKeys(0);

@@ -11,10 +11,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <lib\ce\graphc.h>
+#include <graphx.h>
 
 #include "minefield.h"
-#include "gfx/sprites.h"
+#include "gfx/gfx.h"
 
 void minefield_create_fields(Minefield* minefield, int8_t x, int8_t y);
 
@@ -68,8 +68,8 @@ void minefield_delete(Minefield* minefield) {
     free(minefield);
 }
 
-void minefield_draw_tile(Minefield* minefield, uint8_t* tile, int8_t i, int8_t j) {
-    gc_NoClipDrawTransparentSprite(tile, i * TILE_WIDTH + minefield->xOff, j * TILE_HEIGHT + minefield->yOff, TILE_WIDTH, TILE_HEIGHT);
+void minefield_draw_tile(Minefield* minefield, gfx_sprite_t* tile, int8_t i, int8_t j) {
+    gfx_TransparentSprite(tile, i * TILE_WIDTH + minefield->xOff, j * TILE_HEIGHT + minefield->yOff);
 }
 
 int8_t minefield_count_flags(Minefield* minefield, int8_t x, int8_t y) {
@@ -158,12 +158,11 @@ void minefield_cascade(Minefield* minefield, int8_t x, int8_t y) {
 }
 
 void minefield_create_fields(Minefield* minefield, int8_t x, int8_t y) {
-    int8_t i, j;
     srand(rtc_Time());
 
     minefield->fieldsGenerated = true;
 
-    for (i = 0; i < minefield->numMines; i++) {
+    for (int i = 0; i < minefield->numMines; i++) {
         int mineX, mineY;
         do {
             mineX = rand() % minefield->fieldWidth;
@@ -232,7 +231,7 @@ void minefield_draw_visible_tile(Minefield* minefield, int8_t i, int8_t j) {
     minefield_draw_tile(minefield, minefield_get_visible_type(minefield, i, j), i, j);
 }
 
-uint8_t* minefield_get_tile(int8_t tileNum) {
+gfx_sprite_t* minefield_get_tile(int8_t tileNum) {
     switch (tileNum) {
         case FILLED:
             return filled;

@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <lib/ce/keypadc.h>
+#include <keypadc.h>
 
 #include "key_helper.h"
 

@@ -16,8 +16,8 @@
 #include "minefield.h"
 #include "menu.h"
 
-#define BACKGROUND_COLOR 1
-#define FOREGROUND_COLOR 0
+#define FOREGROUND_COLOR 1
+#define BACKGROUND_COLOR 2
 
 void main_game_loop(MenuEventArgs* menuEventArgs);
 void die(Minefield* minefield, int8_t cursorX, int8_t cursorY);

@@ -59,8 +59,8 @@ void minefield_delete(Minefield* minefield);
 
 void minefield_cascade(Minefield* minefield, int8_t x, int8_t y);
 
-void minefield_draw_tile(Minefield* minefield, uint8_t* tile, int8_t i, int8_t j);
-uint8_t* minefield_get_tile(int8_t tileNum);
+void minefield_draw_tile(Minefield* minefield, gfx_sprite_t* tile, int8_t i, int8_t j);
+gfx_sprite_t* minefield_get_tile(int8_t tileNum);
 void minefield_draw_visible_tile(Minefield* minefield, int8_t i, int8_t j);
 
 void minefield_draw_in_game_field(Minefield* minefield);
