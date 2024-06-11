@@ -10,6 +10,7 @@ void set_difficulty(MenuEventArgs* menu_event_args) {
     settings->width = widths[menu_event_args->Index];
     settings->height = heights[menu_event_args->Index];
     settings->num_mines = num_mines[menu_event_args->Index];
+    menu_event_args->Back = true;
 }
 
 void settings_setup(MenuEventArgs* menu_event_args) {

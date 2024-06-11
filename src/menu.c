@@ -5,8 +5,8 @@
 #include <string.h>
 #include <debug.h>
 
-#include <lib/ce/graphc.h>
-#include <lib/ce/fileioc.h>
+#include <graphx.h>
+#include <fileioc.h>
 
 #include "key_helper.h"
 #include "menu.h"
@@ -67,20 +67,20 @@ int menu_display(Menu* menu) {
     eventArgs = malloc(sizeof(MenuEventArgs));
 
     if (menu->ClearScreen) {
-        gc_FillScrn(menu->ClearColor);
+        gfx_FillScreen(menu->ClearColor);
     }
 
     while (!back) {
-        gc_SetTextColor(menu->TextForegroundColor | menu->TextBackgroundColor << 8);
+        gfx_SetTextFGColor(menu->TextForegroundColor | menu->TextBackgroundColor << 8);
 
         if (menu->Title != NULL) {
-            gc_PrintStringXY(menu->Title, menu->XLocation + 2, menu->YLocation + 1);
-            gc_SetColorIndex(menu->TextForegroundColor);
-            gc_NoClipHorizLine(menu->XLocation + 1, menu->YLocation + 10, gc_StringWidth(menu->Title) + 5);
+            gfx_PrintStringXY(menu->Title, menu->XLocation + 2, menu->YLocation + 1);
+            gfx_SetColor(menu->TextForegroundColor);
+            gfx_HorizLine_NoClip(menu->XLocation + 1, menu->YLocation + 10, gfx_GetStringWidth(menu->Title) + 5);
         }
 
         for (i = 0; i < menu->NumItems; i++) {
-            gc_PrintStringXY(menu->Items[i].Name, menu->XLocation + textPadding + extraTextPadding, menu->YLocation + 3 + linePadding + linePadding * i);
+            gfx_PrintStringXY(menu->Items[i].Name, menu->XLocation + textPadding + extraTextPadding, menu->YLocation + 3 + linePadding + linePadding * i);
 
             if (menu->SelectionType != MenuSelectionType_None && menu->Items[i].Function != MENU_FUNCTION_BACK) {
                 if (menu->Items[i].Selected) {
@@ -92,17 +92,17 @@ int menu_display(Menu* menu) {
 
                 switch (menu->SelectionType) {
                     case MenuSelectionType_Single:
-                        gc_NoClipDrawSprite(selected ? radiobutton_filled : radiobutton_empty, menu->XLocation + textPadding, menu->YLocation + 3 + linePadding + linePadding * i - 1, 9, 9);
+                        gfx_TransparentSprite(selected ? radiobutton_filled : radiobutton_empty, menu->XLocation + textPadding, menu->YLocation + 3 + linePadding + linePadding * i - 1);
                         break;
                     case MenuSelectionType_Multiple:
-                        gc_NoClipDrawSprite(selected ? checkbox_checked : checkbox_empty, menu->XLocation + textPadding, menu->YLocation + 3 + linePadding + linePadding * i - 1, 9, 9);
+                        gfx_TransparentSprite(selected ? checkbox_checked : checkbox_empty, menu->XLocation + textPadding, menu->YLocation + 3 + linePadding + linePadding * i - 1);
                         break;
                 }
             }
         }
 
-        gc_SetTextXY(menu->XLocation + 2, menu->YLocation + 3 + linePadding * y);
-        gc_PrintChar(menu->CursorChar);
+        gfx_SetTextXY(menu->XLocation + 2, menu->YLocation + 3 + linePadding * y);
+        gfx_PrintChar(menu->CursorChar);
         Key_scanKeys(0);
         old_y = y;
         
@@ -154,15 +154,15 @@ int menu_display(Menu* menu) {
                 menu = eventArgs->Menu;
                 back = eventArgs->Back;
             }
-            gc_FillScrn(menu->ClearColor);
+            gfx_FillScreen(menu->ClearColor);
         } else if (Key_justPressed(menu->BackKey)) {
             y = 0;
             back = true;
         }
 
         if (old_y != y) {
-            gc_SetColorIndex(menu->ClearColor);
-            gc_NoClipRectangle(menu->XLocation + 0, menu->YLocation + 3 + linePadding * old_y, 10, 8);
+            gfx_SetColor(menu->ClearColor);
+            gfx_FillRectangle_NoClip(menu->XLocation + 0, menu->YLocation + 3 + linePadding * old_y, 10, 8);
         }
 
         frameNumber++;

@@ -53,10 +53,8 @@ typedef struct MenuEventArgs {
     bool Back;
 } MenuEventArgs;
 
-char* menu_back_string = "Back";
-
 Menu* menu_create(uint8_t numItems, const char* title);
 void menu_delete(Menu* menu);
 int menu_display(Menu* menu);
 
-#endif MENU_H
+#endif
