@@ -1,0 +1,33 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "cl.exe",
+            "intelliSenseMode": "windows-msvc-x64"
+        },
+        {
+            "name": "84+CE",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:\\CEdev\\include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:\\CEdev\\bin\\ez80-clang.exe",
+            "intelliSenseMode": "windows-clang-x86",
+            "cStandard": "c11"
+        }
+    ],
+    "version": 4
+}

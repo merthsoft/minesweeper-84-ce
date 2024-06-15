@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "stdint.h": "c",
+        "keypadc.h": "c",
+        "main.h": "c",
+        "menu.h": "c",
+        "minefield.h": "c",
+        "stdbool.h": "c",
+        "stdlib.h": "c"
+    }
+}
