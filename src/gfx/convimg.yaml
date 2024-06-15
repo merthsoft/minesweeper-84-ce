@@ -4,6 +4,22 @@ palettes:
       - color: {index: 0, r: 255, g: 0, b: 222}
       - color: {index: 1, r: 0, g: 0, b: 0}
       - color: {index: 2, r: 100, g: 100, b: 100}
+      
+      - color: {index: 57, r: 255, g: 0, b: 0}
+      - color: {index: 58, r: 255, g: 0, b: 0}
+      - color: {index: 59, r: 255, g: 109, b: 0}
+      - color: {index: 60, r: 255, g: 219, b: 0}
+      - color: {index: 61, r: 182, g: 255, b: 0}
+      - color: {index: 62, r: 73, g: 255, b: 0}
+      - color: {index: 63, r: 0, g: 255, b: 36}
+      - color: {index: 64, r: 0, g: 255, b: 146}
+      - color: {index: 65, r: 0, g: 255, b: 255}
+      - color: {index: 66, r: 0, g: 146, b: 255}
+      - color: {index: 67, r: 0, g: 36, b: 255}
+      - color: {index: 68, r: 73, g: 0, b: 255}
+      - color: {index: 69, r: 182, g: 0, b: 255}
+      - color: {index: 70, r: 255, g: 0, b: 219}
+      - color: {index: 71, r: 255, g: 0, b: 109}
     images: automatic
 
 outputs:

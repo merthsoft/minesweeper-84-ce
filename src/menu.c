@@ -1,16 +1,12 @@
-#include <stdint.h>
-#include <stdlib.h>
-#include <math.h>
-#include <stdio.h>
-#include <string.h>
-#include <debug.h>
-
 #include <graphx.h>
 #include <fileioc.h>
+#include <keypadc.h>
+#include <time.h>
 
-#include "key_helper.h"
 #include "menu.h"
 #include "menu_sprites.h"
+#include "gfx/gfx.h"
+#include "effects.h"
 
 Menu* menu_create(uint8_t numItems, const char* title) {
     uint8_t i;
@@ -46,7 +42,7 @@ void menu_delete(Menu* menu) {
     free(menu);
 }
 
-int menu_display(Menu* menu) {
+int menu_display(Menu* menu, bool doFadeIn) {
     uint8_t i;
     uint8_t y = 1;
     uint8_t old_y = 1;
@@ -58,6 +54,7 @@ int menu_display(Menu* menu) {
     uint32_t frameNumber = 0;
     MenuEventArgs* eventArgs;
     bool back = false;
+    bool faded = doFadeIn;
     void(*func)(MenuEventArgs*);
 
     if (menu->SelectionType != MenuSelectionType_None) {
@@ -70,7 +67,10 @@ int menu_display(Menu* menu) {
         gfx_FillScreen(menu->ClearColor);
     }
 
-    while (!back) {
+    while(kb_AnyKey());
+    bool keyPressed = false;
+    clock_t clockOffset = 0;
+    while (!(kb_IsDown(kb_KeyClear) || back)) {
         gfx_SetTextFGColor(menu->TextForegroundColor | menu->TextBackgroundColor << 8);
 
         if (menu->Title != NULL) {
@@ -92,10 +92,12 @@ int menu_display(Menu* menu) {
 
                 switch (menu->SelectionType) {
                     case MenuSelectionType_Single:
-                        gfx_TransparentSprite(selected ? radiobutton_filled : radiobutton_empty, menu->XLocation + textPadding, menu->YLocation + 3 + linePadding + linePadding * i - 1);
+                        gfx_TransparentSprite((gfx_sprite_t*)(selected ? radiobutton_filled : radiobutton_empty), menu->XLocation + textPadding, menu->YLocation + 3 + linePadding + linePadding * i - 1);
                         break;
                     case MenuSelectionType_Multiple:
-                        gfx_TransparentSprite(selected ? checkbox_checked : checkbox_empty, menu->XLocation + textPadding, menu->YLocation + 3 + linePadding + linePadding * i - 1);
+                        gfx_TransparentSprite((gfx_sprite_t*)(selected ? checkbox_checked : checkbox_empty), menu->XLocation + textPadding, menu->YLocation + 3 + linePadding + linePadding * i - 1);
+                        break;
+                    case MenuSelectionType_None:
                         break;
                 }
             }
@@ -103,68 +105,106 @@ int menu_display(Menu* menu) {
 
         gfx_SetTextXY(menu->XLocation + 2, menu->YLocation + 3 + linePadding * y);
         gfx_PrintChar(menu->CursorChar);
-        Key_scanKeys(0);
-        old_y = y;
+        
         
         if (menu->ExtraFunction != MENU_FUNCTION_NONE) {
             func = menu->ExtraFunction;
             eventArgs->FrameNumber = frameNumber;
+            eventArgs->Faded = faded;
             eventArgs->Menu = menu;
             eventArgs->Index = y - 1;
             eventArgs->Back = false;
 
             func(eventArgs);
+
             y = eventArgs->Index + 1;
             frameNumber = eventArgs->FrameNumber;
             menu = eventArgs->Menu;
             back = eventArgs->Back;
+            faded = eventArgs->Faded;
         }
 
-        if (Key_justPressed(Key_Up)) { y = y == 1 ? menu->NumItems : y - 1; }
-        else if (Key_justPressed(Key_Down)) { y = y == menu->NumItems ? 1 : y + 1; }
-        else if (Key_justPressed(Key_2nd) || Key_justPressed(Key_Enter)) {
-            uint8_t index = y - 1;
-            func = menu->Items[index].Function;
+        if (faded) {
+            fadein();
+            faded = false;
+        }
 
-            if (menu->SelectionType != MenuSelectionType_None && menu->Items[y - 1].Function != MENU_FUNCTION_BACK) {
-                switch (menu->SelectionType) {
-                    case MenuSelectionType_Single:
-                        if (index != previouslySelectedIndex) {
-                            menu->Items[previouslySelectedIndex].Selected = false;
-                            menu->Items[index].Selected = true;
-                        }
-                        break;
-                    case MenuSelectionType_Multiple:
-                        menu->Items[index].Selected = !menu->Items[index].Selected;
-                        break;
+        // If no key is pressed, reset timer and variable for keeping track of if a key is held down.
+        if (clockOffset == 0 || (!kb_AnyKey() && keyPressed)) {
+            keyPressed = false;
+            clockOffset = clock();
+        }
+        
+        // If no key is being held, allow an input
+        // If a key is being held, introduce a small delay between inputs. In this example the delay is
+        // CLOCKS_PER_SEC / 32, but it can be changed to what feels most natural.
+        if (kb_AnyKey() && (!keyPressed || clock() - clockOffset > CLOCKS_PER_SEC / 32)) {
+            clockOffset = clock();
+
+            old_y = y;
+            if (kb_IsDown(kb_KeyUp)) { y = y == 1 ? menu->NumItems : y - 1; }
+            else if (kb_IsDown(kb_KeyDown)) { y = y == menu->NumItems ? 1 : y + 1; }
+            else if (kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {
+                uint8_t index = y - 1;
+                func = menu->Items[index].Function;
+
+                if (menu->SelectionType != MenuSelectionType_None && menu->Items[y - 1].Function != MENU_FUNCTION_BACK) {
+                    switch (menu->SelectionType) {
+                        case MenuSelectionType_Single:
+                            if (index != previouslySelectedIndex) {
+                                menu->Items[previouslySelectedIndex].Selected = false;
+                                menu->Items[index].Selected = true;
+                            }
+                            break;
+                        case MenuSelectionType_Multiple:
+                            menu->Items[index].Selected = !menu->Items[index].Selected;
+                            break;
+                        case MenuSelectionType_None:
+                            break;
+                    }
+                } 
+                
+                if (func == MENU_FUNCTION_BACK) { back = true; }
+                else if (func != MENU_FUNCTION_NONE) { 
+                    eventArgs->FrameNumber = frameNumber;
+                    eventArgs->Menu = menu;
+                    eventArgs->Index = index;
+                    eventArgs->Back = false;
+
+                    func(eventArgs);
+                    while(kb_AnyKey());
+
+                    y = eventArgs->Index + 1;
+                    frameNumber = eventArgs->FrameNumber;
+                    menu = eventArgs->Menu;
+                    back = eventArgs->Back;
+                    faded = eventArgs->Faded;
                 }
-            } 
-            
-            if (func == MENU_FUNCTION_BACK) { back = true; }
-            else if (func != MENU_FUNCTION_NONE) { 
-                eventArgs->FrameNumber = frameNumber;
-                eventArgs->Menu = menu;
-                eventArgs->Index = index;
-                eventArgs->Back = false;
-
-                func(eventArgs);
-
-                y = eventArgs->Index + 1;
-                frameNumber = eventArgs->FrameNumber;
-                menu = eventArgs->Menu;
-                back = eventArgs->Back;
+                gfx_FillScreen(menu->ClearColor);
+            } else if (kb_IsDown(menu->BackKey) || kb_IsDown(menu->AltBackKey)) {
+                y = 0;
+                back = true;
             }
-            gfx_FillScreen(menu->ClearColor);
-        } else if (Key_justPressed(menu->BackKey)) {
-            y = 0;
-            back = true;
-        }
 
-        if (old_y != y) {
-            gfx_SetColor(menu->ClearColor);
-            gfx_FillRectangle_NoClip(menu->XLocation + 0, menu->YLocation + 3 + linePadding * old_y, 10, 8);
-        }
+            if (old_y != y) {
+                gfx_SetColor(menu->ClearColor);
+                gfx_FillRectangle_NoClip(menu->XLocation + 0, menu->YLocation + 3 + linePadding * old_y, 10, 8);
+            }
 
+            // If this is the first instance of an input after a release (the key has not already been held
+            // down for some time), wait for a longer delay to ensure the user wants to continue holding down
+            // the key and creating more inputs. In this example the delay is CLOCKS_PER_SEC / 4, but it can
+            // be changed to what feels most natural.
+            if (!keyPressed) {
+                while (clock() - clockOffset < CLOCKS_PER_SEC / 4 && kb_AnyKey()) {
+                    kb_Scan();
+                }
+            }
+
+            // Now we know that the user is holding down a key (If not, we'll reset keyPressed back to false
+            // at the beginning of the loop.
+            keyPressed = true;
+        }
         frameNumber++;
     }
 

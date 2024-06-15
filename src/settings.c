@@ -1,5 +1,8 @@
+#include <keypadc.h>
+
 #include "settings.h"
 #include "menu.h"
+#include "effects.h"
 
 void set_difficulty(MenuEventArgs* menu_event_args) {
     Settings* settings = (Settings*)menu_event_args->Menu->Tag;
@@ -23,7 +26,8 @@ void settings_setup(MenuEventArgs* menu_event_args) {
     menu->TextBackgroundColor = menu_event_args->Menu->TextBackgroundColor;
     menu->TextForegroundColor = menu_event_args->Menu->TextForegroundColor;
     menu->ClearColor = menu_event_args->Menu->ClearColor;
-    menu->BackKey = Key_Del;
+    menu->BackKey = kb_Del;
+    menu->AltBackKey = kb_Clear;
     menu->Tag = menu_event_args->Menu->Tag;
 
     menu->SelectionType = MenuSelectionType_Single;
@@ -47,6 +51,10 @@ void settings_setup(MenuEventArgs* menu_event_args) {
         }
     }
 
-    menu_display(menu);
+    fadeout();
+    menu_display(menu, true);
     menu_delete(menu);
+
+    fadeout();
+    menu_event_args->Faded = true;
 }
