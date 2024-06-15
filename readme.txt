@@ -23,6 +23,7 @@ TIny-Hacker for debouncing code: https://gist.github.com/TIny-Hacker/b94e8198523
 Revision History:
 
 v1.4a 2024.06.15 - Debouncing code implemented
+                   Game timer
 
 v1.3  2024.06.10 - Recompile with new toolchain
 

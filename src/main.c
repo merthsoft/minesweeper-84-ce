@@ -110,6 +110,7 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
     Minefield* minefield;
     Settings* settings;
     bool quit = false;
+    uint32_t gameTime = 0;
     
     settings = (Settings*)menuEventArgs->Menu->Tag;
     minefield = minefield_create(settings->width, settings->height, settings->num_mines);
@@ -121,8 +122,23 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
     bool fade = true;
     while(kb_AnyKey());
     bool keyPressed = false;
-    kb_Scan();
+    uint32_t lastClock = clock() / CLOCKS_PER_SEC;
     while (!quit) {
+        uint32_t clockSeconds = clock() / CLOCKS_PER_SEC;
+        if (clockSeconds > lastClock || gameTime == 0)
+        {
+            if (gameTime < 65535) {
+                gameTime += clockSeconds - lastClock;
+            }
+            lastClock = clockSeconds;
+
+            gfx_SetColor(BACKGROUND_COLOR);
+            gfx_FillRectangle_NoClip(160, 0, 160, 8);
+            gfx_SetTextXY(240, 1);
+            gfx_PrintString("Time:  ");
+            gfx_PrintInt(gameTime, 5);
+        }
+
         if (prevFlags != minefield->numFlags) {
             gfx_SetColor(BACKGROUND_COLOR);
             gfx_FillRectangle_NoClip(0, 0, 320, 8);
@@ -295,6 +311,12 @@ void end_game(Minefield* minefield, int8_t cursorX, int8_t cursorY, bool isWin)
         gfx_PrintString("You win! :D Press enter.");
     else
         gfx_PrintString("You lose! D: Press enter.");
+
+    gfx_SetColor(BACKGROUND_COLOR);
+    gfx_FillRectangle_NoClip(160, 0, 160, 8);
+    gfx_SetTextXY(240, 1);
+    gfx_PrintString("Time:  ");
+    gfx_PrintInt(gameTime, 5);
 
     waitForKeys();
 }
