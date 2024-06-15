@@ -3,8 +3,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-
-#include "key_helper.h"
+#include <stdbool.h>
 
 #define MENU_FUNCTION_BACK (void*)1
 #define MENU_FUNCTION_NONE (void*)0
@@ -31,7 +30,7 @@ typedef struct Menu {
 
     uint8_t TextForegroundColor;
     uint8_t TextBackgroundColor;
-    char* Title;
+    const char* Title;
 
     uint8_t NumItems;
     MenuItem* Items;
@@ -40,7 +39,8 @@ typedef struct Menu {
     
     MenuSelectionType SelectionType;
     
-    key_t BackKey;
+    kb_lkey_t BackKey;
+    kb_lkey_t AltBackKey;
     char CursorChar;
     
     void* Tag;
@@ -49,12 +49,13 @@ typedef struct Menu {
 typedef struct MenuEventArgs {
     Menu* Menu;
     uint8_t Index;
-    uint32_t FrameNumber;
+    uint16_t FrameNumber;
     bool Back;
+    bool Faded;
 } MenuEventArgs;
 
 Menu* menu_create(uint8_t numItems, const char* title);
 void menu_delete(Menu* menu);
-int menu_display(Menu* menu);
+int menu_display(Menu* menu, bool doFadeIn);
 
 #endif

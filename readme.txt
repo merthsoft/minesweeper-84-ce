@@ -1,4 +1,4 @@
-Minesweeper 84+CE v1.3
+Minesweeper 84+CE v1.4a
 2024 Merthsoft Creations
 shaun@shaunmcfall.com
 
@@ -18,7 +18,11 @@ Thanks to Tari for all his programming help. I'm bad at C, and he is significant
 
 Andrew Milne created the art assets, and Kerm modified some sprites to make them look a little better on-screen.
 
+TIny-Hacker for debouncing code: https://gist.github.com/TIny-Hacker/b94e819852312e4a1c28b48647eaa80a and testing/bug reporting
+
 Revision History:
+
+v1.4a 2024.06.15 - Debouncing code implemented
 
 v1.3  2024.06.10 - Recompile with new toolchain
 
