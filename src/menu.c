@@ -70,7 +70,7 @@ int menu_display(Menu* menu, bool doFadeIn) {
     while(kb_AnyKey());
     bool keyPressed = false;
     clock_t clockOffset = 0;
-    while (!(kb_IsDown(kb_KeyClear) || back)) {
+    while (!back) {
         gfx_SetTextFGColor(menu->TextForegroundColor | menu->TextBackgroundColor << 8);
 
         if (menu->Title != NULL) {
@@ -80,6 +80,10 @@ int menu_display(Menu* menu, bool doFadeIn) {
         }
 
         for (i = 0; i < menu->NumItems; i++) {
+            if (menu->Items[i].Function == NULL)
+                gfx_SetTextFGColor(menu->TextDisabledForegroundColor | menu->TextBackgroundColor << 8);
+            else
+                gfx_SetTextFGColor(menu->TextForegroundColor | menu->TextBackgroundColor << 8);
             gfx_PrintStringXY(menu->Items[i].Name, menu->XLocation + textPadding + extraTextPadding, menu->YLocation + 3 + linePadding + linePadding * i);
 
             if (menu->SelectionType != MenuSelectionType_None && menu->Items[i].Function != MENU_FUNCTION_BACK) {
@@ -138,16 +142,15 @@ int menu_display(Menu* menu, bool doFadeIn) {
         // If no key is being held, allow an input
         // If a key is being held, introduce a small delay between inputs. In this example the delay is
         // CLOCKS_PER_SEC / 32, but it can be changed to what feels most natural.
-        if (kb_AnyKey() && (!keyPressed || clock() - clockOffset > CLOCKS_PER_SEC / 32)) {
+        if (kb_AnyKey() && (!keyPressed || clock() - clockOffset > CLOCKS_PER_SEC / 8)) {
             clockOffset = clock();
 
             old_y = y;
+            uint8_t index = y - 1;
+            func = menu->Items[index].Function;
             if (kb_IsDown(kb_KeyUp)) { y = y == 1 ? menu->NumItems : y - 1; }
             else if (kb_IsDown(kb_KeyDown)) { y = y == menu->NumItems ? 1 : y + 1; }
-            else if (kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {
-                uint8_t index = y - 1;
-                func = menu->Items[index].Function;
-
+            else if (func != NULL && (kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter))) {
                 if (menu->SelectionType != MenuSelectionType_None && menu->Items[y - 1].Function != MENU_FUNCTION_BACK) {
                     switch (menu->SelectionType) {
                         case MenuSelectionType_Single:
