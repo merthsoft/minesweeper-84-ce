@@ -30,6 +30,7 @@ typedef struct Menu {
 
     uint8_t TextForegroundColor;
     uint8_t TextBackgroundColor;
+    uint8_t TextDisabledForegroundColor;
     const char* Title;
 
     uint8_t NumItems;

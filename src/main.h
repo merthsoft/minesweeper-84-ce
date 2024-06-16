@@ -6,8 +6,11 @@
 
 #define FOREGROUND_COLOR 1
 #define BACKGROUND_COLOR 2
+#define DISABLED_COLOR 21
 
-void main_game_loop(MenuEventArgs* menuEventArgs);
+void new_game(MenuEventArgs* menuEventArgs);
+void continue_game(MenuEventArgs* menuEventArgs);
+void main_game_loop(Minefield* minefield);
 void die(Minefield* minefield, int8_t cursorX, int8_t cursorY);
 void win_game(Minefield* minefield);
 void draw_demo_board(MenuEventArgs* menuEventArgs);

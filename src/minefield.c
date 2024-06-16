@@ -1,25 +1,13 @@
-/* Keep these headers */
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <tice.h>
-#include <debug.h>
-
-/* Standard headers - it's recommended to leave them included */
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
+#include <fileioc.h>
 #include <graphx.h>
+#include <sys/rtc.h>
+#include <string.h>
 
 #include "minefield.h"
 #include "gfx/gfx.h"
 
-void minefield_create_fields(Minefield* minefield, int8_t x, int8_t y);
-
-Minefield* minefield_create(int8_t width, int8_t height, int8_t numMines) {
-    int8_t i, j;
+Minefield* minefield_create(uint8_t width, uint8_t height, uint8_t numMines) {
+    uint8_t i, j;
     Minefield* minefield;
 
     minefield = malloc(sizeof(Minefield));
@@ -36,49 +24,40 @@ Minefield* minefield_create(int8_t width, int8_t height, int8_t numMines) {
 
     minefield->totalNonMineTiles = width*height - numMines;
 
-    minefield->visibleField = malloc(width * sizeof(int8_t*));
-    minefield->mines = malloc(width * sizeof(int8_t*));
+    minefield->visibleField = malloc(width * height * sizeof(int8_t*));
+    minefield->mines = malloc(width * height * sizeof(int8_t*));
 
     for (i = 0; i < width; i++) {
-        minefield->visibleField[i] = malloc(height);
-        minefield->mines[i] = malloc(height);
-        
         for (j = 0; j < height; j++) {
-            minefield->visibleField[i][j] = FILLED;
-            minefield->mines[i][j] = 0;
+            minefield->visibleField[i*width + j] = FILLED;
+            minefield->mines[i*width + j] = 0;
         }
     }
 
-    minefield_create_fields(minefield, 0, 0);
+    minefield->gameTime = 0;
     minefield->gameState = GameState_Running;
     return minefield;
 }
 
 void minefield_delete(Minefield* minefield) {
-    int8_t i;
-
-    for (i = 0; i < minefield->fieldWidth; i++) {
-        free(minefield->visibleField[i]);
-        free(minefield->mines[i]);
-    }
-
     free(minefield->visibleField);
     free(minefield->mines);
 
     free(minefield);
 }
 
-void minefield_draw_tile(Minefield* minefield, gfx_sprite_t* tile, int8_t i, int8_t j) {
+void minefield_draw_tile(Minefield* minefield, gfx_sprite_t* tile, uint8_t i, uint8_t j) {
     gfx_TransparentSprite(tile, i * TILE_WIDTH + minefield->xOff, j * TILE_HEIGHT + minefield->yOff);
 }
 
-int8_t minefield_count_flags(Minefield* minefield, int8_t x, int8_t y) {
-    int8_t flags = 0;
+uint8_t minefield_count_flags(Minefield* minefield, uint8_t x, uint8_t y) {
+    uint8_t flags = 0;
     int8_t i, j;
+    uint8_t width = minefield->fieldWidth;
     for (i = -1; i <= 1; i++) {
         for (j = -1; j <= 1; j++) {
             if (!(x + i < 0 || y + j < 0 || x + i >= minefield->fieldWidth || y + j >= minefield->fieldHeight)) {
-                flags += minefield->visibleField[x + i][y + j] == FLAGGED;
+                flags += minefield->visibleField[(x + i) * width + y + j] == FLAGGED;
             }
         }
     }
@@ -86,15 +65,16 @@ int8_t minefield_count_flags(Minefield* minefield, int8_t x, int8_t y) {
     return flags;
 }
 
-int8_t minefield_count_neighbors(Minefield* minefield, int8_t x, int8_t y) {
+int8_t minefield_count_neighbors(Minefield* minefield, uint8_t x, uint8_t y) {
     int8_t neighbors = 0;
     int8_t i, j;
+    uint8_t width = minefield->fieldWidth;
     for (i = -1; i <= 1; i++) {
         for (j = -1; j <= 1; j++) {
             if (x + i < 0 || y + j < 0) { continue; }
             if (x + i >= minefield->fieldWidth || y + j >= minefield->fieldHeight) { continue; }
 
-            if (minefield->mines[x + i][y + j]) {
+            if (minefield->mines[(x + i) * width + y + j]) {
                 neighbors++;
             }
         }
@@ -103,24 +83,25 @@ int8_t minefield_count_neighbors(Minefield* minefield, int8_t x, int8_t y) {
     return neighbors;
 }
 
-bool minefield_cascade_internal(Minefield* minefield, int8_t x, int8_t y, bool initialClick) {
+bool minefield_cascade_internal(Minefield* minefield, uint8_t x, uint8_t y, bool initialClick) {
     int8_t i, j;
     int8_t neighbors;
+    uint8_t width = minefield->fieldWidth;
 
     if (!minefield->fieldsGenerated) {
-        minefield_create_fields(minefield, x, y);
+        minefield_randomize(minefield, x, y);
     }
 
     if (x < 0 || y < 0 || x >= minefield->fieldWidth || y >= minefield->fieldHeight) { return false; }
-    if (minefield->visibleField[x][y] == FLAGGED || minefield->visibleField[x][y] == 0) { return false; }
+    if (minefield->visibleField[x*width + y] == FLAGGED || minefield->visibleField[x*width + y] == 0) { return false; }
 
-    if (minefield->mines[x][y] == 1) {
-        minefield->visibleField[x][y] = EXPLOSION;
+    if (minefield->mines[x*width + y] == 1) {
+        minefield->visibleField[x*width + y] = EXPLOSION;
         return true;
     }
 
-    if (minefield->visibleField[x][y] > 0) {
-        if (minefield->visibleField[x][y] != minefield_count_flags(minefield, x, y)) { return false; }
+    if (minefield->visibleField[x*width + y] > 0) {
+        if (minefield->visibleField[x*width + y] != minefield_count_flags(minefield, x, y)) { return false; }
         if (!initialClick) { return false; }
         
         for (i = -1; i <= 1; i++) {
@@ -132,7 +113,7 @@ bool minefield_cascade_internal(Minefield* minefield, int8_t x, int8_t y, bool i
     }
 
     neighbors = minefield_count_neighbors(minefield, x, y);
-    minefield->visibleField[x][y] = neighbors;
+    minefield->visibleField[x*width + y] = neighbors;
     minefield->totalVisible += 1;
     
     if (neighbors == 0) {
@@ -145,7 +126,7 @@ bool minefield_cascade_internal(Minefield* minefield, int8_t x, int8_t y, bool i
     return false;
 }
 
-void minefield_cascade(Minefield* minefield, int8_t x, int8_t y) {
+void minefield_cascade(Minefield* minefield, uint8_t x, uint8_t y) {
     bool hit_mine;
     hit_mine = minefield_cascade_internal(minefield, x, y, true);
     if (hit_mine) {
@@ -157,8 +138,9 @@ void minefield_cascade(Minefield* minefield, int8_t x, int8_t y) {
     }
 }
 
-void minefield_create_fields(Minefield* minefield, int8_t x, int8_t y) {
+void minefield_randomize(Minefield* minefield, uint8_t x, uint8_t y) {
     srand(rtc_Time());
+    uint8_t width = minefield->fieldWidth;
 
     minefield->fieldsGenerated = true;
 
@@ -167,13 +149,13 @@ void minefield_create_fields(Minefield* minefield, int8_t x, int8_t y) {
         do {
             mineX = rand() % minefield->fieldWidth;
             mineY = rand() % minefield->fieldHeight;
-        } while (minefield->mines[mineX][mineY] != 0 || (mineX == x && mineY == y));
-        minefield->mines[mineX][mineY] = 1;
+        } while (minefield->mines[mineX*width + mineY] != 0 || (mineX == x && mineY == y));
+        minefield->mines[mineX*width + mineY] = 1;
     }
 }
 
 void minefield_draw_in_game_field(Minefield* minefield) {
-    int8_t i, j;
+    uint8_t i, j;
     
     for (i = 0; i < minefield->fieldWidth; i++) {
         for (j = 0; j < minefield->fieldHeight; j++) {
@@ -183,11 +165,12 @@ void minefield_draw_in_game_field(Minefield* minefield) {
 }
 
 void minefield_draw_demo_field(Minefield* minefield) {
-    int8_t i, j;
+    uint8_t i, j;
+    uint8_t width = minefield->fieldWidth;
     
     for (i = 0; i < minefield->fieldWidth; i++) {
         for (j = 0; j < minefield->fieldHeight; j++) {            
-            if (minefield->mines[i][j]) {
+            if (minefield->mines[i*width + j]) {
                 minefield_draw_tile(minefield, mine, i, j);
             } else {
                 minefield_draw_tile(minefield, minefield_get_tile(minefield_count_neighbors(minefield, i, j)), i, j);
@@ -196,19 +179,20 @@ void minefield_draw_demo_field(Minefield* minefield) {
     }
 }
 
-void minefield_draw_die_field(Minefield* minefield, int8_t x, int8_t y) {
-    int8_t i, j;
+void minefield_draw_die_field(Minefield* minefield, uint8_t x, uint8_t y) {
+    uint8_t i, j;
+    uint8_t width = minefield->fieldWidth;
 
     for (i = 0; i < minefield->fieldWidth; i++) {
         for (j = 0; j < minefield->fieldHeight; j++) {
             minefield_draw_visible_tile(minefield, i, j);
-            if (minefield->mines[i][j]) {
-                if ((i == x && j == y) || (minefield->visibleField[i][j] == EXPLOSION)) {
+            if (minefield->mines[i*width + j]) {
+                if ((i == x && j == y) || (minefield->visibleField[i*width + j] == EXPLOSION)) {
                     minefield_draw_tile(minefield, explode, i, j);
                 } else {
-                    minefield_draw_tile(minefield, minefield->visibleField[i][j] == FLAGGED ? flagged : mine, i, j);
+                    minefield_draw_tile(minefield, minefield->visibleField[i*width + j] == FLAGGED ? flagged : mine, i, j);
                 }
-            } else if (minefield->visibleField[i][j] == FLAGGED) {
+            } else if (minefield->visibleField[i*width + j] == FLAGGED) {
                 minefield_draw_tile(minefield, misflagged, i, j);
             }
         }
@@ -216,18 +200,19 @@ void minefield_draw_die_field(Minefield* minefield, int8_t x, int8_t y) {
 }
 
 void minefield_draw_win_field(Minefield* minefield) {
-    int8_t i, j;
+    uint8_t i, j;
+    uint8_t width = minefield->fieldWidth;
     for (i = 0; i < minefield->fieldWidth; i++) {
         for (j = 0; j < minefield->fieldHeight; j++) {
             minefield_draw_visible_tile(minefield, i, j);
-            if (minefield->mines[i][j]) {
+            if (minefield->mines[i*width + j]) {
                 minefield_draw_tile(minefield, win, i, j);
             }
         }
     }
 }
 
-void minefield_draw_visible_tile(Minefield* minefield, int8_t i, int8_t j) {
+void minefield_draw_visible_tile(Minefield* minefield, uint8_t i, uint8_t j) {
     minefield_draw_tile(minefield, minefield_get_visible_type(minefield, i, j), i, j);
 }
 
@@ -262,4 +247,113 @@ gfx_sprite_t* minefield_get_tile(int8_t tileNum) {
         default:
             return NULL;
     }
+}
+
+const char* MineMagicString = "MINESAVE_1";
+#define     MineMagicStringLength 11
+
+typedef struct SerializedMinefield {
+    uint8_t fieldWidth;
+    uint8_t fieldHeight;
+    uint8_t numMines;
+
+    uint16_t gameTime;
+} SerializedMinefield;
+
+bool minefield_is_valid_save(const char* appVarName) {
+    ti_var_t file = ti_Open(appVarName, "r+");
+    if (!file) { return false; }
+    uint8_t* buffer = NULL;
+    
+    char magicStringBuffer[MineMagicStringLength];
+    if (ti_Read(&magicStringBuffer, MineMagicStringLength, 1, file) != 1)
+        goto load_error;
+
+    if (strncmp(magicStringBuffer, MineMagicString, MineMagicStringLength) != 0)
+        goto load_error;
+
+    SerializedMinefield serializedMinefield;
+    if (ti_Read(&serializedMinefield, sizeof(SerializedMinefield), 1, file) != 1)
+        goto load_error;
+    
+    uint16_t boardsize = serializedMinefield.fieldWidth * serializedMinefield.fieldHeight;
+    buffer = malloc(boardsize * sizeof(uint8_t));
+    if (ti_Read(buffer, sizeof(uint8_t), boardsize, file) != boardsize)
+        goto load_error;
+
+    if (ti_Read(buffer, sizeof(int8_t), boardsize, file) != boardsize)
+        goto load_error;
+
+    free(buffer);
+    ti_Close(file);
+
+    return true;
+    
+load_error:
+    if (buffer != NULL)
+        free(buffer);
+    ti_Close(file);
+    ti_Delete(appVarName);
+    return false;
+}
+
+void minefield_save(Minefield* minefield, const char* appVarName) {
+    ti_var_t file = ti_Open(appVarName, "w");
+    if (!file) { return; }
+
+    ti_Write(MineMagicString, MineMagicStringLength, 1, file);
+    ti_Write(minefield, sizeof(SerializedMinefield), 1, file);
+
+    uint16_t boardsize = minefield->fieldWidth * minefield->fieldHeight;
+    ti_Write(minefield->mines, sizeof(uint8_t), boardsize, file);
+    ti_Write(minefield->visibleField, sizeof(int8_t), boardsize, file);
+
+    if (!ti_IsArchived(file)) {
+        ti_SetArchiveStatus(true, file);
+    }
+
+    ti_Close(file);
+}
+
+Minefield* minefield_load(const char* appVarName) {
+    ti_var_t file = ti_Open(appVarName, "r+");
+    if (!file) { return NULL; }
+    
+    Minefield* minefield = NULL;
+
+    char magicStringBuffer[MineMagicStringLength];
+    if (ti_Read(&magicStringBuffer, MineMagicStringLength, 1, file) != 1)
+        goto load_error;
+
+    if (strncmp(magicStringBuffer, MineMagicString, MineMagicStringLength) != 0)
+        goto load_error;
+
+    SerializedMinefield serializedMinefield;
+    if (ti_Read(&serializedMinefield, sizeof(SerializedMinefield), 1, file) != 1)
+        goto load_error;
+
+    minefield = minefield_create(serializedMinefield.fieldWidth, serializedMinefield.fieldHeight, serializedMinefield.numMines);
+    minefield->gameTime = serializedMinefield.gameTime;
+    minefield->fieldsGenerated = true;
+
+    uint16_t boardsize = minefield->fieldWidth * minefield->fieldHeight;
+    ti_Read(minefield->mines, sizeof(uint8_t), boardsize, file);
+    ti_Read(minefield->visibleField, sizeof(int8_t), boardsize, file);
+
+    for (int i = 0; i < boardsize; i++) {
+        if (minefield->visibleField[i] > 0) {
+            minefield->totalVisible++;
+        } else if (minefield->visibleField[i] == FLAGGED) {
+            minefield->numFlags++;
+        }
+    }
+    
+load_error:
+    if (!ti_IsArchived(file)) {
+        ti_SetArchiveStatus(false, file);
+    }
+
+    ti_Close(file);
+    ti_Delete(appVarName);
+    return minefield;
 }

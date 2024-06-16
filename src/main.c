@@ -1,7 +1,7 @@
 #include <graphx.h>
 #include <keypadc.h>
 #include <time.h>
-#include <debug.h>
+#include <string.h>
 
 #include "main.h"
 #include "gfx/gfx.h"
@@ -14,6 +14,8 @@ int copyright_shimmer = 0;
 const char copyright[] = "Merthsoft  '24";
 
 #define copyright_length 14
+
+const char appvar[] = "MNFLD";
 
 int main(void) {
     Menu* main_menu;
@@ -29,36 +31,45 @@ int main(void) {
     gfx_FillScreen(BACKGROUND_COLOR);
     gfx_SetTransparentColor(0);
     
-    main_menu = menu_create(4, NULL);
+    main_menu = menu_create(5, NULL);
+    
+    main_menu->Items[0].Name = "New Game";
+    main_menu->Items[0].Function = new_game;
+
+    if (minefield_is_valid_save(appvar)) 
+    {
+        main_menu->Items[1].Name = "Continue";
+        main_menu->Items[1].Function = continue_game;
+    } else {
+        main_menu->Items[1].Name = "<No saved game found>";
+        main_menu->Items[1].Function = NULL;
+    }
+    main_menu->Items[2].Name = "Difficulty";
+    main_menu->Items[2].Function = settings_setup;
+    main_menu->Items[3].Name = "Help";
+    main_menu->Items[3].Function = print_help_text;
+    main_menu->Items[4].Name = "Quit";
+    main_menu->Items[4].Function = MENU_FUNCTION_BACK;
     
     main_menu->ExtraFunction = draw_demo_board;
     
     main_menu->XLocation = 130;
-    main_menu->YLocation = 188;
+    main_menu->YLocation = 178;
     
     main_menu->TextBackgroundColor = BACKGROUND_COLOR;
     main_menu->TextForegroundColor = FOREGROUND_COLOR;
+    main_menu->TextDisabledForegroundColor = DISABLED_COLOR;
     main_menu->ClearColor = BACKGROUND_COLOR;
     main_menu->BackKey = kb_KeyClear;
     main_menu->AltBackKey = kb_KeyDel;
     main_menu->Tag = &settings;
 
     main_menu->ClearScreen = false;
-    
-    main_menu->Items[0].Name = "Play";
-    main_menu->Items[0].Function = main_game_loop;
-    main_menu->Items[1].Name = "Difficulty";
-    main_menu->Items[1].Function = settings_setup;
-    main_menu->Items[2].Name = "Help";
-    main_menu->Items[2].Function = print_help_text;
-    main_menu->Items[3].Name = "Quit";
-    main_menu->Items[3].Function = MENU_FUNCTION_BACK;
 
     menu_display(main_menu, true);
     menu_delete(main_menu);
 
     gfx_End();
-    pgrm_CleanUp();
 
     while(kb_AnyKey());
 
@@ -67,15 +78,16 @@ int main(void) {
 
 #define RAINBOW_START 57
 void draw_demo_board(MenuEventArgs* menuEventArgs) {
-    dbg_printf("FrameNumber: %d\n", menuEventArgs->FrameNumber);
-    if (menuEventArgs->FrameNumber % 5 == 0 || menuEventArgs->Faded) {
+    if (menuEventArgs->FrameNumber % 10 == 0 || menuEventArgs->Faded) {
         Minefield* minefield;
-        minefield = minefield_create(8, 8, 10);
+        minefield = minefield_create(9, 7, 15);
+        minefield->yOff -= 7;
+        minefield_randomize(minefield, 0, 0);
         minefield_draw_demo_field(minefield);
         minefield_delete(minefield);
     } 
     
-    if (menuEventArgs->FrameNumber % 50 == 0 || menuEventArgs->Faded) {
+    if (menuEventArgs->FrameNumber % 125 == 0 || menuEventArgs->Faded) {
         copyright_shimmer = 0;
     }
 
@@ -97,52 +109,88 @@ void draw_demo_board(MenuEventArgs* menuEventArgs) {
         copyright_shimmer++;
 
     gfx_SetTextFGColor(FOREGROUND_COLOR);
-    gfx_PrintStringXY("v1.4a", 285, 32);
+    gfx_PrintStringXY("v1.4b", 285, 32);
 }
 
-void main_game_loop(MenuEventArgs* menuEventArgs) {
+void run(MenuEventArgs* menuEventArgs, Minefield* minefield)
+{
+    fadeout();
+    main_game_loop(minefield);
+    if (minefield->gameState == GameState_Running && minefield->fieldsGenerated)
+    {
+        minefield_save(minefield, appvar);
+        menuEventArgs->Menu->Items[1].Name = "Continue";
+        menuEventArgs->Menu->Items[1].Function = continue_game;
+    } else {
+        menuEventArgs->Menu->Items[1].Name = "<No saved game found>";
+        menuEventArgs->Menu->Items[1].Function = NULL;
+    }
+    minefield_delete(minefield);
+    menuEventArgs->Faded = true;
+}
+
+void new_game(MenuEventArgs* menuEventArgs)
+{
+    Settings* settings = (Settings*)menuEventArgs->Menu->Tag;
+    Minefield* minefield = minefield_create(settings->width, settings->height, settings->num_mines);
+    
+    run(menuEventArgs, minefield);
+}
+
+void continue_game(MenuEventArgs* menuEventArgs)
+{
+    Minefield* minefield = minefield_load(appvar);
+    if (minefield == NULL)
+    {
+        Settings* settings = (Settings*)menuEventArgs->Menu->Tag;
+        minefield = minefield_create(settings->width, settings->height, settings->num_mines);
+    }
+
+    run(menuEventArgs, minefield);
+}
+
+void main_game_loop(Minefield* minefield) {
     int8_t x = 0;
     int8_t y = 0;
     int8_t old_x = 0;
     int8_t old_y = 0;
     bool redraw = true;
     bool flag = false;
-    Minefield* minefield;
-    Settings* settings;
     bool quit = false;
-    uint32_t gameTime = 0;
-    
-    settings = (Settings*)menuEventArgs->Menu->Tag;
-    minefield = minefield_create(settings->width, settings->height, settings->num_mines);
+
+    uint8_t width = minefield->fieldWidth;
+
     gfx_FillScreen(BACKGROUND_COLOR);
 
     int8_t prevFlags = -1;
     clock_t clockOffset = 0;
-    fadeout();
+    
     bool fade = true;
     while(kb_AnyKey());
     bool keyPressed = false;
     uint32_t lastClock = clock() / CLOCKS_PER_SEC;
     while (!quit) {
         uint32_t clockSeconds = clock() / CLOCKS_PER_SEC;
-        if (clockSeconds > lastClock || gameTime == 0)
+        if (clockSeconds > lastClock || minefield->gameTime == 0)
         {
-            if (gameTime < 65535) {
-                gameTime += clockSeconds - lastClock;
+            if (minefield->gameTime < 65535) {
+                minefield->gameTime += clockSeconds - lastClock;
             }
             lastClock = clockSeconds;
 
             gfx_SetColor(BACKGROUND_COLOR);
             gfx_FillRectangle_NoClip(160, 0, 160, 8);
             gfx_SetTextXY(240, 1);
+            gfx_SetTextFGColor(FOREGROUND_COLOR);
             gfx_PrintString("Time:  ");
-            gfx_PrintInt(gameTime, 5);
+            gfx_PrintInt(minefield->gameTime, 5);
         }
 
         if (prevFlags != minefield->numFlags) {
             gfx_SetColor(BACKGROUND_COLOR);
-            gfx_FillRectangle_NoClip(0, 0, 320, 8);
+            gfx_FillRectangle_NoClip(0, 0, 160, 8);
             gfx_SetTextXY(1, 1);
+            gfx_SetTextFGColor(FOREGROUND_COLOR);
             gfx_PrintString("Mines:  ");
             gfx_PrintInt(minefield->numFlags, 2);
             gfx_PrintString(" / ");
@@ -164,17 +212,17 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
             clockOffset = clock();
         }
 
-        if (kb_AnyKey() && (!keyPressed || clock() - clockOffset > CLOCKS_PER_SEC / 64)) {
+        if (kb_AnyKey() && (!keyPressed || clock() - clockOffset > CLOCKS_PER_SEC/ 32)) {
             clockOffset = clock();
             old_x = x;
             old_y = y;
 
             if (kb_IsDown(kb_KeyUp)) { y = y == 0 ? minefield->fieldHeight - 1 : y - 1; }
             else if (kb_IsDown(kb_KeyDown)) { y = y == minefield->fieldHeight - 1 ? 0 : y + 1; }
-            else if (kb_IsDown(kb_KeyLeft)) { x = x == 0 ? minefield->fieldWidth - 1 : x - 1; }
-            else if (kb_IsDown(kb_KeyRight)) { x = x == minefield->fieldWidth - 1 ? 0 : x + 1; }
-            else if (kb_IsDown(kb_Key2nd)) {
-                if (minefield->visibleField[x][y] != FLAGGED && minefield->visibleField[x][y] != 0) {
+            else if (kb_IsDown(kb_KeyLeft)) { x = x == 0 ? width - 1 : x - 1; }
+            else if (kb_IsDown(kb_KeyRight)) { x = x == width - 1 ? 0 : x + 1; }
+            else if (kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {
+                if (minefield->visibleField[x*width +y] != FLAGGED && minefield->visibleField[x*width +y] != 0) {
                     minefield_cascade(minefield, x, y);
 
                     if (minefield->gameState == GameState_Lost) {
@@ -188,14 +236,14 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
                     }
                 }
             } else if (kb_IsDown(kb_KeyAlpha)) {
-                if (minefield->visibleField[x][y] == FILLED) {
-                    minefield->visibleField[x][y] = FLAGGED;
+                if (minefield->visibleField[x*width +y] == FILLED) {
+                    minefield->visibleField[x*width +y] = FLAGGED;
                     minefield->numFlags++;
-                } else if (minefield->visibleField[x][y] == FLAGGED) {
-                    minefield->visibleField[x][y] = QUESTION;
+                } else if (minefield->visibleField[x*width +y] == FLAGGED) {
+                    minefield->visibleField[x*width +y] = QUESTION;
                     minefield->numFlags--;
-                } else if (minefield->visibleField[x][y] == QUESTION) {
-                    minefield->visibleField[x][y] = FILLED;
+                } else if (minefield->visibleField[x*width +y] == QUESTION) {
+                    minefield->visibleField[x*width +y] = FILLED;
                 }
                 flag = true;
             } else if (kb_IsDown(kb_KeyClear) || kb_IsDown(kb_KeyMode) || kb_IsDown(kb_KeyDel)) {
@@ -216,10 +264,8 @@ void main_game_loop(MenuEventArgs* menuEventArgs) {
             keyPressed = true;
         }
     }
-    fadeout();
-    minefield_delete(minefield);
 
-    menuEventArgs->Faded = true;
+    fadeout();
 }
 
 void print_string(char* string, uint16_t x, uint8_t* y, uint16_t indent) {
@@ -316,7 +362,7 @@ void end_game(Minefield* minefield, int8_t cursorX, int8_t cursorY, bool isWin)
     gfx_FillRectangle_NoClip(160, 0, 160, 8);
     gfx_SetTextXY(240, 1);
     gfx_PrintString("Time:  ");
-    gfx_PrintInt(gameTime, 5);
+    gfx_PrintInt(minefield->gameTime, 5);
 
     waitForKeys();
 }
